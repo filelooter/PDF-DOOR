@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional PDF tools and solutions for all your document needs">
+    <meta name="keywords" content="PDF tools, merge, split, convert, professional PDF solutions">
+    <meta name="author" content="PDF Door">
+    
+    <title>PDF Door - Professional PDF Tools</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --accent-color: #fbbc04;
+            --success-color: #34a853;
+            --danger-color: #ea4335;
+            --donation-color: #f44336;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
+            --card-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+            --card-hover-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--light-color);
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Header Styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: transparent;
+            backdrop-filter: none;
+            border-bottom: 1px solid transparent;
+            z-index: 1000;
+            transition: background-color 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease;
+            animation: slideDown 0.5s ease-out;
+        }
+        header.header-scrolled {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom-color: var(--border-color);
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        nav {
+            max-width: 1200px; margin: 0 auto; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center; height: 64px;
+        }
+        
+        .logo {
+            display: flex; align-items: center; gap: 12px; text-decoration: none;
+            font-weight: 600; font-size: 20px; color: var(--text-primary); transition: var(--transition); transform-origin: left;
+        }
+        .logo:hover { transform: scale(1.05); color: var(--primary-color); }
+        .logo-icon {
+            width: 36px; height: 36px; background: var(--primary-color); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; color: white;
+            font-size: 18px; transition: var(--transition); animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+        
+        .logo:hover .logo-icon { background: var(--secondary-color); transform: rotate(10deg) scale(1.1); }
+        .nav-menu { display: flex; list-style: none; gap: 30px; margin: 0; padding: 0; align-items: center; }
+        .nav-link {
+            color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 16px;
+            position: relative; transition: var(--transition); padding: 8px 0;
+        }
+        .nav-link:hover { color: var(--primary-color); transform: translateY(-2px); }
+        .nav-link.active { color: var(--primary-color); }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px;
+            background: var(--primary-color); transition: all 0.3s ease; transform: translateX(-50%);
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+        .donation-btn {
+            background: var(--donation-color); color: white; padding: 10px 24px; border-radius: 6px;
+            font-weight: 500; font-size: 15px; border: none; cursor: pointer; transition: var(--transition);
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+            animation: pulse 2s infinite, float 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .donation-btn:hover { background: #d32f2f; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); transform: translateY(-2px) scale(1.05); }
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 4px; padding: 5px; transition: var(--transition); }
+        .hamburger:hover { transform: scale(1.1); }
+        .hamburger span { width: 25px; height: 3px; background: var(--text-primary); transition: var(--transition); border-radius: 2px; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh; padding-top: 64px; display: flex; align-items: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%); position: relative;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.3" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,133.3C960,128,1056,96,1152,90.7C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover; animation: wave 20s linear infinite;
+        }
+        @keyframes wave { 0% { transform: translateX(0); } 50% { transform: translateX(-20px); } 100% { transform: translateX(0); } }
+        .hero-content {
+            max-width: 800px; margin: 0 auto; padding: 0 20px; position: relative;
+            z-index: 1; animation: fadeInUp 1s ease; text-align: center;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .hero h1 { font-size: 3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.2; animation: fadeInUp 1s ease 0.2s both; }
+        .hero p { font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; animation: fadeInUp 1s ease 0.4s both; }
+        
+        /* Search Bar & Sections (minified for brevity) */
+        .search-container{position:relative;z-index:2;max-width:600px;margin:0 auto 2rem;animation:fadeInUp 1s ease .6s both}.search-wrapper{background:white;border-radius:8px;padding:4px;box-shadow:var(--card-shadow);transition:var(--transition)}.search-wrapper:focus-within{box-shadow:var(--card-hover-shadow);transform:translateY(-2px)}.search-inner{display:flex;align-items:center;gap:8px}.category-dropdown{position:relative}.category-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--light-color);border:none;border-radius:4px;cursor:pointer;font-weight:500;color:var(--text-primary);transition:var(--transition);white-space:nowrap}.category-btn:hover{background:#e8eaed;transform:translateY(-2px)}.category-btn.active{background:var(--primary-color);color:white;transform:scale(1.05)}.category-icon{font-size:14px;transition:var(--transition)}.category-btn:hover .category-icon{transform:rotate(180deg)}.category-menu{position:absolute;top:calc(100% + 8px);left:0;background:white;border-radius:8px;box-shadow:var(--card-hover-shadow);width:220px;max-height:320px;overflow-y:auto;overflow-x:hidden;z-index:1001;display:none;opacity:0;transform:translateY(-10px);transition:var(--transition);animation:slideDown .3s ease}.category-menu.active{display:block;opacity:1;transform:translateY(0)}.category-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:var(--transition);border-bottom:1px solid var(--border-color)}.category-item:last-child{border-bottom:none}.category-item:hover{background:var(--light-color);transform:translateX(5px)}.category-item.active{background:rgba(26,115,232,.1);color:var(--primary-color)}.category-item-icon{width:20px;text-align:center;font-size:14px;transition:var(--transition)}.category-item:hover .category-item-icon{transform:scale(1.2)}.category-item-name{font-weight:500}.category-item-count{margin-left:auto;font-size:12px;color:var(--text-secondary);background:var(--light-color);padding:2px 8px;border-radius:12px;transition:var(--transition)}.category-item:hover .category-item-count{background:var(--primary-color);color:white}.search-input-wrapper{flex:1;display:flex;align-items:center;background:white;border-radius:4px;padding:0 16px;transition:var(--transition)}.search-input-wrapper:focus-within{transform:scale(1.02)}.search-icon{color:var(--text-secondary);margin-right:12px;font-size:16px;transition:var(--transition)}.search-input-wrapper:focus-within .search-icon{color:var(--primary-color);transform:scale(1.1)}.search-input{flex:1;border:none;background:0 0;padding:12px 0;font-size:16px;color:var(--text-primary);outline:none;transition:var(--transition)}.search-input::placeholder{color:var(--text-secondary)}.search-action-btn{display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--primary-color);border:none;border-radius:4px;cursor:pointer;color:white;font-size:16px;transition:var(--transition)}.search-action-btn:hover{background:var(--secondary-color);transform:scale(1.1) rotate(5deg)}.search-results{position:absolute;top:calc(100% + 12px);left:0;right:0;background:white;border-radius:8px;box-shadow:var(--card-hover-shadow);max-height:400px;overflow-y:auto;z-index:1000;display:none;opacity:0;transform:translateY(-10px);transition:var(--transition);animation:slideDown .3s ease}.search-results.active{display:block;opacity:1;transform:translateY(0)}.search-results-header{padding:12px 16px;border-bottom:1px solid var(--border-color);font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-secondary);letter-spacing:.5px;position:sticky;top:0;background:white;z-index:10}.search-result-item{display:flex;align-items:center;padding:12px 16px;cursor:pointer;transition:var(--transition);border-bottom:1px solid var(--border-color)}.search-result-item:last-child{border-bottom:none}.search-result-item:hover{background:var(--light-color);transform:translateX(5px)}.search-result-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:16px;flex-shrink:0;transition:var(--transition)}.search-result-item:hover .search-result-icon{transform:scale(1.1) rotate(5deg)}.search-result-info{flex:1;min-width:0}.search-result-name{font-weight:600;color:var(--text-primary);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.search-result-description{font-size:13px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.search-result-category{display:inline-block;font-size:11px;font-weight:500;padding:3px 8px;border-radius:12px;margin-top:6px;text-transform:uppercase;letter-spacing:.5px;transition:var(--transition)}.search-result-item:hover .search-result-category{transform:scale(1.05)}.search-no-results{padding:40px 20px;text-align:center;color:var(--text-secondary)}.search-no-results i{font-size:48px;margin-bottom:16px;opacity:.5;animation:bounce 2s infinite}.search-no-results p{font-size:16px;margin-bottom:8px}.search-no-results small{font-size:14px;opacity:.8}.search-loading{padding:40px 20px;text-align:center;color:var(--text-secondary)}.search-loading i{font-size:24px;margin-bottom:10px;color:var(--primary-color);animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}.search-loading p{font-size:14px;margin:0}mark{background:#fff8c1;color:#202124;padding:1px 2px;border-radius:2px;font-weight:600}.hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fadeInUp 1s ease .8s both}.btn{display:inline-block;padding:12px 24px;border-radius:4px;font-weight:500;text-align:center;cursor:pointer;transition:var(--transition);border:none;font-size:16px;text-decoration:none;position:relative;overflow:hidden}.btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transition:left .5s}.btn:hover::before{left:100%}.btn-primary{background:var(--primary-color);color:white;box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24)}.btn-primary:hover{background:var(--secondary-color);box-shadow:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);transform:translateY(-3px)}.btn-secondary{background:0 0;color:var(--primary-color);border:1px solid var(--primary-color)}.btn-secondary:hover{background:rgba(26,115,232,.1);transform:translateY(-3px);box-shadow:0 2px 5px rgba(0,0,0,.1)}.section{padding:80px 0;opacity:0;transform:translateY(30px);transition:all .6s ease}.section.animate{opacity:1;transform:translateY(0)}.container{max-width:1200px;margin:0 auto;padding:0 20px}.section-header{text-align:center;margin-bottom:60px}.section-title{font-size:2.5rem;font-weight:700;color:var(--text-primary);margin-bottom:1rem;position:relative;display:inline-block}.section-title::after{content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:60px;height:3px;background:var(--primary-color);border-radius:2px;transition:width .3s ease}.section-header:hover .section-title::after{width:100px}.section-subtitle{font-size:1.125rem;color:var(--text-secondary);max-width:600px;margin:0 auto}.tools{background:white}.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:24px}.tool-card{background:white;padding:24px;border-radius:8px;box-shadow:var(--card-shadow);text-align:center;transition:var(--transition);cursor:pointer;border:1px solid var(--border-color);position:relative;overflow:hidden;opacity:0;transform:translateY(20px);animation:fadeInUp .6s ease forwards}.tool-card:nth-child(1){animation-delay:.1s}.tool-card:nth-child(2){animation-delay:.2s}.tool-card:nth-child(3){animation-delay:.3s}.tool-card:nth-child(4){animation-delay:.4s}.tool-card:nth-child(5){animation-delay:.5s}.tool-card:nth-child(6){animation-delay:.6s}.tool-card:nth-child(7){animation-delay:.7s}.tool-card:nth-child(8){animation-delay:.8s}.tool-card:nth-child(9){animation-delay:.9s}.tool-card:nth-child(10){animation-delay:1s}.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary-color);transform:scaleX(0);transition:transform .3s ease}.tool-card:hover::before{transform:scaleX(1)}.tool-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:var(--card-hover-shadow)}.tool-icon{font-size:32px;color:var(--primary-color);margin-bottom:16px;transition:var(--transition);display:inline-block}.tool-card:hover .tool-icon{transform:scale(1.2) rotate(5deg);animation:bounce 1s}.tool-name{font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:8px;transition:var(--transition)}.tool-card:hover .tool-name{color:var(--primary-color)}.tool-description{font-size:14px;color:var(--text-secondary);line-height:1.5}.tool-card[data-category=merge] .tool-icon{color:var(--primary-color)}.tool-card[data-category=split] .tool-icon{color:#9c27b0}.tool-card[data-category=convert] .tool-icon{color:#ff9800}.tool-card[data-category=compress] .tool-icon{color:#009688}.tool-card[data-category=protect] .tool-icon{color:var(--danger-color)}.tool-card[data-category=edit] .tool-icon{color:#e91e63}.tool-card[data-category=sign] .tool-icon{color:var(--secondary-color)}.tool-card[data-category=extract] .tool-icon{color:#00bcd4}.tool-card[data-category=organize] .tool-icon{color:var(--success-color)}.tool-card[data-category=ocr] .tool-icon{color:var(--accent-color)}.tool-card[data-category=watermark] .tool-icon{color:#9c27b0}.tool-card[data-category=compare] .tool-icon{color:var(--danger-color)}.tool-card[data-category=repair] .tool-icon{color:var(--accent-color)}.tool-card[data-category=annotate] .tool-icon{color:#e91e63}.tool-card[data-category=advanced] .tool-icon{color:#651fff}.tool-card[data-category=security] .tool-icon{color:#ff5722}.tool-card[data-category=batch] .tool-icon{color:#795548}.tool-card[data-category=forms] .tool-icon{color:#607d8b}.category-badge-merge{background:rgba(26,115,232,.1);color:var(--primary-color)}.category-badge-split{background:rgba(156,39,176,.1);color:#9c27b0}.category-badge-convert{background:rgba(255,152,0,.1);color:#ff9800}.category-badge-compress{background:rgba(0,150,136,.1);color:#009688}.category-badge-protect{background:rgba(234,67,53,.1);color:var(--danger-color)}.category-badge-edit{background:rgba(233,30,99,.1);color:#e91e63}.category-badge-sign{background:rgba(66,133,244,.1);color:var(--secondary-color)}.category-badge-extract{background:rgba(0,188,212,.1);color:#00bcd4}.category-badge-organize{background:rgba(52,168,83,.1);color:var(--success-color)}.category-badge-ocr{background:rgba(251,188,4,.1);color:var(--accent-color)}.category-badge-watermark{background:rgba(156,39,176,.1);color:#9c27b0}.category-badge-compare{background:rgba(234,67,53,.1);color:var(--danger-color)}.category-badge-repair{background:rgba(251,188,4,.1);color:var(--accent-color)}.category-badge-annotate{background:rgba(233,30,99,.1);color:#e91e63}.category-badge-advanced{background:rgba(101,31,255,.1);color:#651fff}.category-badge-security{background:rgba(255,87,34,.1);color:#ff5722}.category-badge-batch{background:rgba(121,85,72,.1);color:#795548}.category-badge-forms{background:rgba(96,125,139,.1);color:#607d8b}.tool-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;animation:fadeIn .3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}}.tool-modal.active{display:flex}.modal-content{background:white;border-radius:12px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.3);animation:slideUp .3s ease}@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}.modal-header{padding:20px 24px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center}.modal-title{font-size:1.5rem;font-weight:600;color:var(--text-primary)}.close-modal{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-secondary);transition:var(--transition)}.close-modal:hover{color:var(--danger-color);transform:scale(1.1)}.modal-body{padding:24px}.file-upload-area{border:2px dashed var(--border-color);border-radius:8px;padding:40px 20px;text-align:center;margin-bottom:20px;transition:var(--transition);cursor:pointer}.file-upload-area:hover{border-color:var(--primary-color);background:rgba(26,115,232,.02)}.file-upload-area.dragover{border-color:var(--primary-color);background:rgba(26,115,232,.05)}.upload-icon{font-size:48px;color:var(--primary-color);margin-bottom:16px}.file-input{display:none}.upload-text{font-size:16px;color:var(--text-secondary);margin-bottom:8px}.upload-hint{font-size:14px;color:var(--text-secondary);opacity:.7}.file-list{margin-bottom:20px}.file-item{display:flex;align-items:center;padding:12px;background:var(--light-color);border-radius:6px;margin-bottom:8px}.file-icon{width:40px;height:40px;background:var(--primary-color);border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;margin-right:12px;font-size:18px}.file-info{flex:1}.file-name{font-weight:500;margin-bottom:4px}.file-size{font-size:12px;color:var(--text-secondary)}.remove-file{background:none;border:none;color:var(--danger-color);cursor:pointer;font-size:16px;transition:var(--transition)}.remove-file:hover{transform:scale(1.2)}.tool-options{margin-bottom:20px}.option-group{margin-bottom:16px}.option-label{display:block;font-weight:500;margin-bottom:8px;color:var(--text-primary)}.option-input{width:100%;padding:10px 12px;border:1px solid var(--border-color);border-radius:4px;font-family:'Inter',sans-serif;font-size:14px;transition:var(--transition)}.option-input:focus{outline:none;border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(26,115,232,.1)}.process-btn{width:100%;padding:12px;background:var(--primary-color);color:white;border:none;border-radius:4px;font-weight:500;font-size:16px;cursor:pointer;transition:var(--transition)}.process-btn:hover{background:var(--secondary-color)}.process-btn:disabled{background:var(--text-secondary);cursor:not-allowed}.processing-area{display:none;text-align:center;padding:40px 20px}.processing-area.active{display:block}.processing-icon{font-size:48px;color:var(--primary-color);margin-bottom:16px;animation:spin 2s linear infinite}.processing-text{font-size:16px;color:var(--text-primary);margin-bottom:8px}.processing-details{font-size:14px;color:var(--text-secondary)}.result-area{display:none;text-align:center;padding:40px 20px}.result-area.active{display:block}.result-icon{font-size:48px;color:var(--success-color);margin-bottom:16px}.result-text{font-size:16px;color:var(--text-primary);margin-bottom:20px}.download-btn{display:inline-block;padding:12px 24px;background:var(--success-color);color:white;border-radius:4px;font-weight:500;text-decoration:none;transition:var(--transition)}.download-btn:hover{background:#2e7d32;transform:translateY(-2px)}.features{background:var(--light-color)}.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px}.feature-card{background:white;border-radius:8px;padding:30px;text-align:center;transition:var(--transition);height:100%;display:flex;flex-direction:column;align-items:center;box-shadow:var(--card-shadow);opacity:0;transform:translateY(20px);animation:fadeInUp .6s ease forwards}.feature-card:nth-child(1){animation-delay:.1s}.feature-card:nth-child(2){animation-delay:.2s}.feature-card:nth-child(3){animation-delay:.3s}.feature-card:nth-child(4){animation-delay:.4s}.feature-card:nth-child(5){animation-delay:.5s}.feature-card:nth-child(6){animation-delay:.6s}.feature-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:var(--card-hover-shadow)}.feature-icon{width:64px;height:64px;background:var(--primary-color);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;margin-bottom:20px;transition:var(--transition)}.feature-card:hover .feature-icon{transform:scale(1.1) rotate(5deg);background:var(--secondary-color);animation:bounce 1s}.feature-title{font-size:1.25rem;font-weight:600;color:var(--text-primary);margin-bottom:15px;transition:var(--transition)}.feature-card:hover .feature-title{color:var(--primary-color)}.feature-description{color:var(--text-secondary);line-height:1.6}.about{background:white}.about-content{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}.about-text{font-size:1.125rem;color:var(--text-primary);line-height:1.8}.about-text p{margin-bottom:20px;opacity:0;transform:translateX(-20px);animation:fadeInRight .6s ease forwards}.about-text p:nth-child(1){animation-delay:.1s}.about-text p:nth-child(2){animation-delay:.2s}.about-text p:nth-child(3){animation-delay:.3s}@keyframes fadeInRight{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}.about-image{border-radius:12px;overflow:hidden;box-shadow:var(--card-hover-shadow);opacity:0;transform:translateX(20px);animation:fadeInLeft .6s ease .4s forwards}@keyframes fadeInLeft{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}.about-image img{width:100%;height:auto;display:block;transition:var(--transition)}.about-image:hover img{transform:scale(1.05)}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:30px;margin-top:60px;text-align:center}.stat-item{padding:20px;background:var(--light-color);border-radius:8px;transition:var(--transition);opacity:0;transform:translateY(20px);animation:fadeInUp .6s ease forwards}.stat-item:nth-child(1){animation-delay:.1s}.stat-item:nth-child(2){animation-delay:.2s}.stat-item:nth-child(3){animation-delay:.3s}.stat-item:nth-child(4){animation-delay:.4s}.stat-item:hover{transform:translateY(-8px) scale(1.05);box-shadow:var(--card-shadow)}.stat-number{font-size:2.5rem;font-weight:700;color:var(--primary-color);margin-bottom:10px;transition:var(--transition)}.stat-item:hover .stat-number{transform:scale(1.1)}.stat-label{font-size:1rem;color:var(--text-secondary)}.contact{background:var(--light-color)}.contact-content{display:grid;grid-template-columns:1fr 1fr;gap:60px}.contact-form{background:white;padding:40px;border-radius:12px;box-shadow:var(--card-shadow);opacity:0;transform:translateX(20px);animation:fadeInLeft .6s ease .5s forwards}.contact-form:hover{transform:translateX(0) translateY(-5px);box-shadow:var(--card-hover-shadow)}.form-group{margin-bottom:20px;opacity:0;transform:translateY(10px);animation:fadeInUp .6s ease forwards}.form-group:nth-child(1){animation-delay:.6s}.form-group:nth-child(2){animation-delay:.7s}.form-group:nth-child(3){animation-delay:.8s}.form-group:nth-child(4){animation-delay:.9s}.form-group label{display:block;font-weight:500;margin-bottom:8px;color:var(--text-primary)}.form-group input,.form-group textarea{width:100%;padding:12px 16px;border:1px solid var(--border-color);border-radius:4px;font-family:'Inter',sans-serif;font-size:16px;transition:var(--transition)}.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(26,115,232,.1);transform:scale(1.02)}.form-group textarea{resize:vertical;min-height:120px}.form-submit{background:var(--primary-color);color:white;padding:12px 30px;border-radius:4px;border:none;cursor:pointer;font-weight:500;font-size:16px;transition:var(--transition);width:100%;opacity:0;transform:translateY(10px);animation:fadeInUp .6s ease 1s forwards}.form-submit:hover{background:var(--secondary-color);box-shadow:0 2px 8px rgba(0,0,0,.15);transform:translateY(-2px)}
+        
+        /* NEW: FAQ Section Styles */
+        .faq-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .faq-column h3 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        .faq-item {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+        body.dark-mode .faq-item {
+            background-color: var(--dark-color);
+        }
+        .faq-question {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+        .faq-question:hover {
+            background-color: var(--light-color);
+        }
+        body.dark-mode .faq-question:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .faq-question .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+        .faq-question.active .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+        .faq-question.active {
+           color: var(--primary-color);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .faq-answer p {
+            padding: 0 24px 18px 24px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        /* End of FAQ styles */
+        
+        footer{background:var(--dark-color);color:white;padding:50px 0 20px}.footer-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:40px;margin-bottom:30px}.footer-column h3{font-size:1.25rem;margin-bottom:20px;position:relative;display:inline-block}.footer-column h3::after{content:'';position:absolute;bottom:-5px;left:0;width:30px;height:2px;background:var(--primary-color);transition:width .3s ease}.footer-column:hover h3::after{width:60px}.footer-links{list-style:none}.footer-links li{margin-bottom:10px;opacity:0;transform:translateX(-10px);animation:fadeInRight .6s ease forwards}.footer-links li:nth-child(1){animation-delay:.1s}.footer-links li:nth-child(2){animation-delay:.2s}.footer-links li:nth-child(3){animation-delay:.3s}.footer-links li:nth-child(4){animation-delay:.4s}.footer-links li:nth-child(5){animation-delay:.5s}.footer-links a{color:rgba(255,255,255,.8);text-decoration:none;transition:var(--transition);display:inline-block}.footer-links a:hover{color:white;padding-left:5px;transform:translateX(5px)}.footer-bottom{text-align:center;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6)}.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--dark-color);color:white;padding:15px 25px;border-radius:4px;box-shadow:var(--card-hover-shadow);z-index:3000;opacity:0;visibility:hidden;transition:var(--transition)}.toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;animation:bounce .5s}.toast.success{background:var(--success-color)}.toast.error{background:var(--danger-color)}.toast.warning{background:var(--accent-color)}.donation-tabs{display:flex;border-bottom:1px solid var(--border-color);margin-bottom:20px}.donation-tab-btn{flex:1;padding:12px 10px;cursor:pointer;border:none;background:0 0;font-size:14px;font-weight:500;color:var(--text-secondary);border-bottom:3px solid transparent;transition:var(--transition)}.donation-tab-btn:hover{color:var(--primary-color);background:var(--light-color)}.donation-tab-btn.active{color:var(--primary-color);border-bottom-color:var(--primary-color)}.donation-content{text-align:center}.donation-panel{display:none;animation:fadeIn .5s}.donation-panel.active{display:block}.donation-panel p{color:var(--text-secondary);margin-bottom:16px}.donation-panel .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+        
+        /* ===== START: NEW & UPDATED STYLES ===== */
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 4px; background: var(--primary-color);
+            width: 0%; z-index: 9999; transition: width 0.1s ease-out;
+        }
+        #theme-toggle-btn {
+            background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-size: 22px;
+            padding: 5px; border-radius: 50%; width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        #theme-toggle-btn:hover {
+            color: var(--primary-color); background-color: rgba(0,0,0,0.05); transform: scale(1.1) rotate(15deg);
+        }
+        body.dark-mode #theme-toggle-btn:hover { background-color: rgba(255,255,255,0.1); }
+        body.dark-mode {
+            --light-color: #181A1B; --dark-color: #202324; --text-primary: #E8EAED;
+            --text-secondary: #969BA1; --border-color: #35383B; --card-shadow: 0 1px 2px 0 rgba(0,0,0,0.3);
+            --card-hover-shadow: 0 4px 8px 3px rgba(0,0,0,0.25);
+        }
+        body.dark-mode header.header-scrolled { background: rgba(24, 26, 27, 0.85); }
+        body.dark-mode .nav-menu, body.dark-mode .tools, body.dark-mode .about, body.dark-mode .modal-content,
+        body.dark-mode .search-results, body.dark-mode .category-menu { background: #181A1B; }
+        body.dark-mode .tool-card, body.dark-mode .feature-card, body.dark-mode .contact-form,
+        body.dark-mode .search-wrapper, body.dark-mode .stat-item, body.dark-mode .search-input-wrapper {
+            background: #202324; border: 1px solid var(--border-color);
+        }
+        body.dark-mode .hero { background: linear-gradient(135deg, #202324 0%, #181A1B 100%); }
+        body.dark-mode .contact, body.dark-mode .features { background: #181A1B; }
+        body.dark-mode .form-group input, body.dark-mode .form-group textarea, body.dark-mode .option-input {
+            background-color: #2A2C2D; color: var(--text-primary); border-color: #404346;
+        }
+        body.dark-mode mark { background: #8c7200; color: #f0f0f0; }
+        
+        /* NEW: Scroll to Top Button */
+        #scrollToTopBtn {
+            display: none; /* Hidden by default */
+            position: fixed; bottom: 30px; right: 30px; z-index: 99;
+            border: none; outline: none; background-color: var(--primary-color);
+            color: white; cursor: pointer; padding: 0; border-radius: 50%;
+            width: 50px; height: 50px; font-size: 22px;
+            box-shadow: var(--card-hover-shadow); transition: var(--transition);
+            opacity: 0; transform: translateY(20px);
+        }
+        #scrollToTopBtn.show {
+            display: flex; /* Use flex to center icon */
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #scrollToTopBtn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-5px);
+        }
+        /* ===== END: NEW STYLES ===== */
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed; top: 64px; left: -100%; width: 100%; height: calc(100vh - 64px); background: white;
+                flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 30px;
+                transition: var(--transition); gap: 20px; box-shadow: var(--card-hover-shadow);
+            }
+            body.dark-mode .nav-menu { background: #181A1B; }
+            .nav-menu.active { left: 0; }
+            .hamburger { display: flex; }
+            .donation-btn { display: none; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.125rem; }
+            .section-title { font-size: 2rem; }
+            .tools-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+            .search-inner { flex-direction: column; gap: 8px; }
+            .search-input-wrapper, .category-btn { width: 100%; }
+            .category-menu { width: 100%; max-height: 240px; }
+            .about-content, .contact-content { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .modal-content { width: 95%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <header>
+        <nav>
+            <a href="#home" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <span>PDF Door</span>
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#tools" class="nav-link">Tools</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li>
+                    <button id="theme-toggle-btn" title="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
+                <li>
+                    <a href="#" class="donation-btn" id="donationBtn">
+                        <i class="fas fa-heart"></i>
+                        <span>Donate</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+    
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Professional PDF Tools</h1>
+            <p>Complete PDF management solution with advanced features for all your document needs</p>
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <div class="search-inner">
+                        <div class="category-dropdown">
+                            <button class="category-btn" id="categoryBtn">
+                                <i class="fas fa-layer-group category-icon"></i>
+                                <span id="selectedCategory">All Categories</span>
+                                <i class="fas fa-chevron-down category-icon"></i>
+                            </button>
+                            <div class="category-menu" id="categoryMenu">
+                                <div class="category-item active" data-category="all"> <i class="fas fa-th category-item-icon"></i> <span class="category-item-name">All Categories</span> <span class="category-item-count">95+</span> </div>
+                                <div class="category-item" data-category="merge"> <i class="fas fa-object-group category-item-icon"></i> <span class="category-item-name">Merge</span> <span class="category-item-count">7</span> </div>
+                                <div class="category-item" data-category="split"> <i class="fas fa-cut category-item-icon"></i> <span class="category-item-name">Split</span> <span class="category-item-count">8</span> </div>
+                                <div class="category-item" data-category="convert"> <i class="fas fa-exchange-alt category-item-icon"></i> <span class="category-item-name">Convert</span> <span class="category-item-count">21</span> </div>
+                                <div class="category-item" data-category="compress"> <i class="fas fa-compress category-item-icon"></i> <span class="category-item-name">Compress</span> <span class="category-item-count">6</span> </div>
+                                <div class="category-item" data-category="protect"> <i class="fas fa-lock category-item-icon"></i> <span class="category-item-name">Protect</span> <span class="category-item-count">9</span> </div>
+                                <div class="category-item" data-category="edit"> <i class="fas fa-edit category-item-icon"></i> <span class="category-item-name">Edit</span> <span class="category-item-count">17</span> </div>
+                                <div class="category-item" data-category="sign"> <i class="fas fa-signature category-item-icon"></i> <span class="category-item-name">Sign</span> <span class="category-item-count">5</span> </div>
+                                <div class="category-item" data-category="extract"> <i class="fas fa-file-export category-item-icon"></i> <span class="category-item-name">Extract</span> <span class="category-item-count">7</span> </div>
+                                <div class="category-item" data-category="organize"> <i class="fas fa-sort category-item-icon"></i> <span class="category-item-name">Organize</span> <span class="category-item-count">11</span> </div>
+                                <div class="category-item" data-category="ocr"> <i class="fas fa-font category-item-icon"></i> <span class="category-item-name">OCR</span> <span class="category-item-count">7</span> </div>
+                                <div class="category-item" data-category="watermark"> <i class="fas fa-tint category-item-icon"></i> <span class="category-item-name">Watermark</span> <span class="category-item-count">4</span> </div>
+                                <div class="category-item" data-category="compare"> <i class="fas fa-columns category-item-icon"></i> <span class="category-item-name">Compare</span> <span class="category-item-count">3</span> </div>
+                                <div class="category-item" data-category="repair"> <i class="fas fa-wrench category-item-icon"></i> <span class="category-item-name">Repair</span> <span class="category-item-count">3</span> </div>
+                                <div class="category-item" data-category="annotate"> <i class="fas fa-highlighter category-item-icon"></i> <span class="category-item-name">Annotate</span> <span class="category-item-count">4</span> </div>
+                                <div class="category-item" data-category="advanced"> <i class="fas fa-cogs category-item-icon"></i> <span class="category-item-name">Advanced</span> <span class="category-item-count">5</span> </div>
+                                <div class="category-item" data-category="security"> <i class="fas fa-shield-alt category-item-icon"></i> <span class="category-item-name">Security</span> <span class="category-item-count">5</span> </div>
+                                <div class="category-item" data-category="batch"> <i class="fas fa-tasks category-item-icon"></i> <span class="category-item-name">Batch</span> <span class="category-item-count">4</span> </div>
+                                <div class="category-item" data-category="forms"> <i class="fas fa-wpforms category-item-icon"></i> <span class="category-item-name">Forms</span> <span class="category-item-count">4</span> </div>
+                            </div>
+                        </div>
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="searchInput" placeholder="Search for PDF tools...">
+                        </div>
+                        <button class="search-action-btn" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="search-results" id="searchResults">
+                    <div class="search-results-header">Search Results</div>
+                    <div id="searchResultsList"></div>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="#tools" class="btn btn-primary">Explore Tools</a>
+                <a href="#" class="btn btn-secondary" id="heroDonateBtn">Support Us</a>
+            </div>
+        </div>
+    </section>
+    <section class="section tools" id="tools"> <div class="container"> <div class="section-header"> <h2 class="section-title">Our PDF Tools</h2> <p class="section-subtitle">Professional tools to handle all your PDF needs efficiently</p> </div> <div class="tools-grid" id="toolsGrid"> </div> </div> </section>
+    <div class="tool-modal" id="toolModal"> <div class="modal-content"> <div class="modal-header"> <h3 class="modal-title" id="modalToolName">Tool Name</h3> <button class="close-modal" id="closeModal">&times;</button> </div> <div class="modal-body"> <div class="file-upload-area" id="fileUploadArea"> <i class="fas fa-cloud-upload-alt upload-icon"></i> <p class="upload-text">Drag & drop files here or click to browse</p> <p class="upload-hint">Supported formats: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG</p> <input type="file" class="file-input" id="fileInput" multiple> </div> <div class="file-list" id="fileList"></div> <div class="tool-options" id="toolOptions"></div> <button class="process-btn" id="processBtn" disabled>Process Files</button> <div class="processing-area" id="processingArea"> <i class="fas fa-spinner processing-icon"></i> <p class="processing-text">Processing your files...</p> <p class="processing-details" id="processingDetails">This may take a few moments</p> </div> <div class="result-area" id="resultArea"> <i class="fas fa-check-circle result-icon"></i> <p class="result-text">Processing complete!</p> <a href="#" class="download-btn" id="downloadBtn">Download Result</a> </div> </div> </div> </div>
+    <section class="section features" id="features"> <div class="container"> <div class="section-header"> <h2 class="section-title">Why Choose PDF Door?</h2> <p class="section-subtitle">Experience the best PDF management solution with our advanced features</p> </div> <div class="features-grid"> <div class="feature-card"> <div class="feature-icon"> <i class="fas fa-bolt"></i> </div> <h3 class="feature-title">Lightning Fast</h3> <p class="feature-description">Process your PDF files in seconds with our optimized algorithms</p> </div> <div class="feature-card"> <div class="feature-icon"> <i class="fas fa-shield-alt"></i> </div> <h3 class="feature-title">Secure & Private</h3> <p class="feature-description">Your files are encrypted and deleted automatically after processing</p> </div> <div class="feature-card"> <div class="feature-icon"> <i class="fas fa-mobile-alt"></i> </div> <h3 class="feature-title">Mobile Friendly</h3> <p class="feature-description">Works seamlessly on all devices - desktop, tablet, and mobile</p> </div> <div class="feature-card"> <div class="feature-icon"> <i class="fas fa-gem"></i> </div> <h3 class="feature-title">Premium Quality</h3> <p class="feature-description">Maintain the highest quality standards for all your PDF operations</p> </div> <div class="feature-card"> <div class="feature-icon"> <i class="fas fa-users"></i> </div> <h3 class="feature-title">Easy to Use</h3> <p class="feature-description">Intuitive interface designed for users of all skill levels</p> </div> <div class="feature-card"> <div class="feature-icon"> <i class="fas fa-dollar-sign"></i> </div> <h3 class="feature-title">Free Forever</h3> <p class="feature-description">Core features are always free with no hidden charges</p> </div> </div> </div> </section>
+    <section class="section about" id="about"> <div class="container"> <div class="section-header"> <h2 class="section-title">About PDF Door</h2> <p class="section-subtitle">Learn more about our mission and commitment to excellence</p> </div> <div class="about-content"> <div class="about-text"> <h3>Our Mission</h3> <p>At PDF Door, we're dedicated to providing the most comprehensive and user-friendly PDF management solution available. Our mission is to make PDF processing accessible to everyone, from individual users to large enterprises.</p> <h3>Why We Started</h3> <p>Founded in 2020, PDF Door was born from a simple observation: PDF tools were often complicated, expensive, or limited in functionality. We set out to change that by creating a platform that combines power, simplicity, and affordability.</p> <h3>Our Commitment</h3> <p>We're committed to continuously improving our platform, adding new features, and ensuring our users have the best possible experience. Your feedback drives our innovation, and we're always listening to your needs.</p> </div> <div class="about-image"> <img src="https://i.ibb.co/5XXhkj7z/Generated-Image-October-15-2025-9-21-AM.png" alt="About PDF Door"> </div> </div> <div class="stats-grid"> <div class="stat-item"> <div class="stat-number">2M+</div> <div class="stat-label">Happy Users</div> </div> <div class="stat-item"> <div class="stat-number">95+</div> <div class="stat-label">PDF Tools</div> </div> <div class="stat-item"> <div class="stat-number">10M+</div> <div class="stat-label">Files Processed</div> </div> <div class="stat-item"> <div class="stat-number">99.9%</div> <div class="stat-label">Uptime</div> </div> </div> </div> </section>
+    <section class="section contact" id="contact"> <div class="container"> <div class="section-header"> <h2 class="section-title">Get in Touch</h2> <p class="section-subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p> </div> <div class="contact-content">
+            <div class="faq-column">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>Is PDF Door completely free to use?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, all the core tools on our website are free for everyone. We believe in providing accessible and easy-to-use PDF utilities. You can support us through the "Donate" button to help us maintain and improve the service.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>How do you handle the security of my files?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We prioritize your privacy and security. All files you upload are processed over a secure (HTTPS) connection and are automatically deleted from our servers after a few hours. We do not access, copy, or share your files.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>Do I need to install any software?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>No, PDF Door is a fully web-based tool. You don't need to install any software or plugins. All you need is a modern web browser and an internet connection to use all our tools from any device.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>Is there a limit on file size or number of uses?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>For our free service, we have generous limits that are sufficient for most users. If you have very large files or need to process thousands of documents, please get in touch with us to discuss possible enterprise solutions.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>What file formats do you support?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Our tools are very flexible! You can upload not only PDFs but also Microsoft Office files (Word, Excel, PowerPoint) and common image formats (JPG, PNG). Most tools will then convert them to PDF for processing.</p>
+                    </div>
+                </div>
+            </div>
+            <form class="contact-form" id="contactForm"> <div class="form-group"> <label for="name">Your Name</label> <input type="text" id="name" name="name" required> </div> <div class="form-group"> <label for="email">Email Address</label> <input type="email" id="email" name="email" required> </div> <div class="form-group"> <label for="subject">Subject</label> <input type="text" id="subject" name="subject" required> </div> <div class="form-group"> <label for="message">Message</label> <textarea id="message" name="message" required></textarea> </div> <button type="submit" class="form-submit">Send Message</button> </form> </div> </div> </section>
+    <div class="tool-modal" id="donationModal"> <div class="modal-content" style="max-width: 500px;"> <div class="modal-header"> <h3 class="modal-title"><i class="fas fa-heart" style="color: var(--donation-color);"></i> Support Our Work</h3> <button class="close-modal" id="closeDonationModal">&times;</button> </div> <div class="modal-body"> <div class="donation-tabs"> <button class="donation-tab-btn active" data-tab="upi">UPI</button> <button class="donation-tab-btn" data-tab="paypal">PayPal</button> <button class="donation-tab-btn" data-tab="coffee">Buy Me a Coffee</button> </div> <div class="donation-content"> <div id="upi-content" class="donation-panel active"> <p>Scan the QR code with any UPI app to donate.</p> <img src="https://i.ibb.co/PRrQrZg/photo-2025-10-10-21-21-56.jpg" alt="UPI QR Code" style="max-width: 250px; border-radius: 8px;"> <p style="margin-top: 16px; font-weight: 500; color: var(--text-primary);">UPI ID: filelooter-1@okaxis</p> </div> <div id="paypal-content" class="donation-panel"> <p>Click the button below to securely donate via PayPal.</p> <a href="https://www.paypal.com/paypalme/gaurav9675?locale.x=en_GB&country.x=IN" target="_blank" class="btn" style="background-color: #00457C; color: white; width: 100%;"> <i class="fab fa-paypal"></i> Donate with PayPal </a> </div> <div id="coffee-content" class="donation-panel"> <p>If you find this tool helpful, consider buying me a coffee!</p> <a href="#" target="_blank" class="btn" style="background-color: #FFDD00; color: #000; width: 100%;"> <i class="fas fa-coffee"></i> Buy Me a Coffee </a> </div> </div> </div> </div> </div>
+    
+    <footer>
+        <div class="container"> <div class="footer-content"> <div class="footer-column"> <h3>PDF Door</h3> <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">Your complete PDF management solution with professional tools.</p> </div> <div class="footer-column"> <h3>Quick Links</h3> <ul class="footer-links"> <li><a href="#home">Home</a></li> <li><a href="#tools">Tools</a></li> <li><a href="#features">Features</a></li> <li><a href="#about">About</a></li> <li><a href="#contact">Contact</a></li> </ul> </div> <div class="footer-column"> <h3>Popular Tools</h3> <ul class="footer-links"> <li><a href="#tools">Merge PDF</a></li> <li><a href="#tools">Split PDF</a></li> <li><a href="#tools">Compress PDF</a></li> <li><a href="#tools">Convert to PDF</a></li> <li><a href="#tools">Edit PDF</a></li> </ul> </div> <div class="footer-column"> <h3>Support</h3> <ul class="footer-links"> <li><a href="#contact">Help Center</a></li> <li><a href="#contact">Privacy Policy</a></li> <li><a href="#contact">Terms of Service</a></li> <li><a href="#" id="footerDonateBtn">Donate</a></li> </ul> </div> </div> <div class="footer-bottom"> <p>&copy; 2025 PDF Door. All rights reserved.</p> </div> </div>
+    </footer>
+    
+    <button id="scrollToTopBtn" title="Go to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // PDF Tools data (minified for brevity)
+        const toolsData = [ { name: "Merge PDF", description: "Combine multiple PDF files into one document", category: "merge", icon: "fas fa-object-group" }, { name: "Combine PDF Pages", description: "Merge specific pages from different PDFs", category: "merge", icon: "fas fa-copy" }, { name: "PDF Merger Pro", description: "Advanced merging with page selection", category: "merge", icon: "fas fa-layer-group" }, { name: "Batch Merge PDF", description: "Merge multiple PDFs in one operation", category: "merge", icon: "fas fa-object-ungroup" }, { name: "Smart PDF Merger", description: "Intelligent merging with content detection", category: "merge", icon: "fas fa-brain" }, { name: "PDF Portfolio Creator", description: "Create PDF portfolios with multiple files", category: "merge", icon: "fas fa-folder" }, { name: "Merge & Reorder PDF", description: "Merge PDFs with custom page ordering", category: "merge", icon: "fas fa-sort-amount-down" }, { name: "Split PDF", description: "Split PDF into multiple files by pages", category: "split", icon: "fas fa-cut" }, { name: "Extract PDF Pages", description: "Extract specific pages from PDF", category: "split", icon: "fas fa-file-export" }, { name: "Split by Bookmarks", description: "Split PDF using bookmarks as guides", category: "split", icon: "fas fa-bookmark" }, { name: "Split by Size", description: "Split PDF into equal-sized chunks", category: "split", icon: "fas fa-weight-hanging" }, { name: "Split by Content", description: "Split PDF based on content sections", category: "split", icon: "fas fa-align-left" }, { name: "Batch Split PDF", description: "Split multiple PDFs simultaneously", category: "split", icon: "fas fa-tasks" }, { name: "Split & Rename PDF", description: "Split PDF with automatic naming", category: "split", icon: "fas fa-tag" }, { name: "Smart PDF Splitter", description: "Intelligent splitting with pattern recognition", category: "split", icon: "fas fa-magic" }, { name: "PDF to Word", description: "Convert PDF to editable Word document", category: "convert", icon: "fas fa-file-word" }, { name: "PDF to Excel", description: "Convert PDF tables to Excel spreadsheet", category: "convert", icon: "fas fa-file-excel" }, { name: "PDF to PowerPoint", description: "Convert PDF to PowerPoint presentation", category: "convert", icon: "fas fa-file-powerpoint" }, { name: "PDF to JPG", description: "Convert PDF pages to JPG images", category: "convert", icon: "fas fa-image" }, { name: "Word to PDF", description: "Convert Word documents to PDF", category: "convert", icon: "fas fa-file-pdf" }, { name: "Excel to PDF", description: "Convert Excel files to PDF", category: "convert", icon: "fas fa-file-pdf" }, { name: "PDF to HTML", description: "Convert PDF to web-friendly HTML format", category: "convert", icon: "fas fa-code" }, { name: "PDF to TXT", description: "Convert PDF to plain text file", category: "convert", icon: "fas fa-file-alt" }, { name: "PDF to PNG", description: "Convert PDF pages to PNG images", category: "convert", icon: "fas fa-image" }, { name: "JPG to PDF", description: "Convert JPG images to PDF document", category: "convert", icon: "fas fa-file-pdf" }, { name: "PNG to PDF", description: "Convert PNG images to PDF document", category: "convert", icon: "fas fa-file-pdf" }, { name: "Compress PDF", description: "Reduce PDF file size without quality loss", category: "compress", icon: "fas fa-compress" }, { name: "Optimize PDF", description: "Optimize PDF for web and mobile", category: "compress", icon: "fas fa-file-contract" }, { name: "PDF Size Optimizer", description: "Advanced compression with quality control", category: "compress", icon: "fas fa-compress-arrows-alt" }, { name: "Batch Compress PDF", description: "Compress multiple PDFs at once", category: "compress", icon: "fas fa-tasks" }, { name: "Smart PDF Compressor", description: "AI-powered compression with best results", category: "compress", icon: "fas fa-robot" }, { name: "Image Compression", description: "Reduce image size within PDF files", category: "compress", icon: "fas fa-images" }, { name: "Protect PDF", description: "Add password protection to PDF", category: "protect", icon: "fas fa-lock" }, { name: "Unlock PDF", description: "Remove password from protected PDF", category: "protect", icon: "fas fa-unlock" }, { name: "Encrypt PDF", description: "Advanced encryption for sensitive documents", category: "protect", icon: "fas fa-shield-alt" }, { name: "PDF Digital Signature", description: "Add certified digital signatures", category: "protect", icon: "fas fa-certificate" }, { name: "PDF Permission Manager", description: "Set printing and editing permissions", category: "protect", icon: "fas fa-user-lock" }, { name: "Redact PDF", description: "Permanently remove sensitive content", category: "protect", icon: "fas fa-eye-slash" }, { name: "Watermark Protection", description: "Add security watermarks to PDF", category: "protect", icon: "fas fa-tint" }, { name: "PDF Certificate Signing", description: "Add digital certificate signatures", category: "protect", icon: "fas fa-id-card" }, { name: "PDF Security Audit", description: "Analyze PDF security vulnerabilities", category: "protect", icon: "fas fa-search" }, { name: "Edit PDF Text", description: "Edit text content in PDF documents", category: "edit", icon: "fas fa-edit" }, { name: "Add Watermark", description: "Add text or image watermark to PDF", category: "edit", icon: "fas fa-tint" }, { name: "Rotate PDF", description: "Rotate PDF pages to correct orientation", category: "edit", icon: "fas fa-sync-alt" }, { name: "Add Page Numbers", description: "Insert page numbers to PDF", category: "edit", icon: "fas fa-list-ol" }, { name: "PDF Redaction", description: "Permanently remove sensitive information", category: "edit", icon: "fas fa-eye-slash" }, { name: "PDF Metadata Editor", description: "Edit PDF document properties and metadata", category: "edit", icon: "fas fa-info-circle" }, { name: "PDF Page Resizer", description: "Change PDF page dimensions and size", category: "edit", icon: "fas fa-expand" }, { name: "PDF Background Remover", description: "Remove or change PDF background", category: "edit", icon: "fas fa-eraser" }, { name: "PDF Form Creator", description: "Create fillable PDF forms from scratch", category: "edit", icon: "fas fa-wpforms" }, { name: "Sign PDF", description: "Add digital signature to PDF", category: "sign", icon: "fas fa-signature" }, { name: "Fill PDF Forms", description: "Fill out interactive PDF forms", category: "sign", icon: "fas fa-edit" }, { name: "Initial PDF", description: "Add initials to PDF documents", category: "sign", icon: "fas fa-signature" }, { name: "Timestamp PDF", description: "Add digital timestamp to PDF", category: "sign", icon: "fas fa-clock" }, { name: "Batch Sign PDF", description: "Sign multiple PDFs simultaneously", category: "sign", icon: "fas fa-tasks" }, { name: "Extract Images", description: "Extract all images from PDF", category: "extract", icon: "fas fa-image" }, { name: "Extract Text", description: "Extract text content from PDF", category: "extract", icon: "fas fa-file-alt" }, { name: "Extract PDF Attachments", description: "Extract files attached to PDF", category: "extract", icon: "fas fa-paperclip" }, { name: "Extract PDF Links", description: "Extract hyperlinks from PDF document", category: "extract", icon: "fas fa-link" }, { name: "Extract PDF Metadata", description: "Extract document properties and info", category: "extract", icon: "fas fa-info-circle" }, { name: "Extract PDF Fonts", description: "Extract fonts used in PDF document", category: "extract", icon: "fas fa-font" }, { name: "Extract PDF Annotations", description: "Extract comments and annotations", category: "extract", icon: "fas fa-sticky-note" }, { name: "Reorder PDF Pages", description: "Rearrange pages in PDF document", category: "organize", icon: "fas fa-sort" }, { name: "Delete PDF Pages", description: "Remove unwanted pages from PDF", category: "organize", icon: "fas fa-trash" }, { name: "PDF Page Numbering", description: "Add professional page numbering", category: "organize", icon: "fas fa-sort-numeric-down" }, { name: "PDF Header & Footer", description: "Add headers and footers to PDF pages", category: "organize", icon: "fas fa-heading" }, { name: "PDF Bookmark Creator", description: "Create and manage PDF bookmarks", category: "organize", icon: "fas fa-bookmark" }, { name: "OCR PDF", description: "Convert scanned PDF to searchable text", category: "ocr", icon: "fas fa-font" }, { name: "Text Recognition", description: "Advanced OCR with high accuracy", category: "ocr", icon: "fas fa-text-height" }, { name: "Batch OCR PDF", description: "OCR multiple PDF files simultaneously", category: "ocr", icon: "fas fa-tasks" }, { name: "OCR Language Support", description: "OCR with multiple language recognition", category: "ocr", icon: "fas fa-language" }, { name: "Add Text Watermark", description: "Add custom text as watermark", category: "watermark", icon: "fas fa-font" }, { name: "Add Image Watermark", description: "Add logo or image as watermark", category: "watermark", icon: "fas fa-image" }, { name: "Batch Watermark PDF", description: "Add watermarks to multiple PDFs", category: "watermark", icon: "fas fa-tasks" }, { name: "Dynamic Watermark", description: "Add dynamic watermarks with variables", category: "watermark", icon: "fas fa-bolt" }, { name: "Compare PDF", description: "Compare two PDF files for differences", category: "compare", icon: "fas fa-columns" }, { name: "PDF Version Compare", description: "Compare different versions of PDF", category: "compare", icon: "fas fa-code-branch" }, { name: "Visual PDF Compare", description: "Visual comparison with highlighting", category: "compare", icon: "fas fa-eye" }, { name: "Repair PDF", description: "Fix corrupted or damaged PDF files", category: "repair", icon: "fas fa-wrench" }, { name: "PDF Structure Repair", description: "Fix PDF structure and syntax errors", category: "repair", icon: "fas fa-cogs" }, { name: "PDF Font Repair", description: "Fix font embedding and substitution issues", category: "repair", icon: "fas fa-font" }, { name: "Annotate PDF", description: "Add comments and highlights to PDF", category: "annotate", icon: "fas fa-highlighter" }, { name: "PDF Markup", description: "Advanced annotation and markup tools", category: "annotate", icon: "fas fa-pen" }, { name: "PDF Sticky Notes", description: "Add digital sticky notes to PDF", category: "annotate", icon: "fas fa-sticky-note" }, { name: "PDF Drawing Tools", description: "Add freehand drawings and shapes", category: "annotate", icon: "fas fa-pencil-alt" }, { name: "PDF Batch Processor", description: "Process multiple PDF files in batch", category: "advanced", icon: "fas fa-cogs" }, { name: "PDF Quality Analyzer", description: "Analyze PDF quality and compliance", category: "advanced", icon: "fas fa-chart-bar" }, { name: "PDF Accessibility Checker", description: "Check PDF accessibility compliance", category: "advanced", icon: "fas fa-universal-access" }, { name: "PDF Preflight Check", description: "Pre-press PDF quality checking", category: "advanced", icon: "fas fa-plane" }, { name: "PDF Scripting", description: "Advanced PDF automation with scripts", category: "advanced", icon: "fas fa-terminal" }, { name: "PDF Security Scanner", description: "Scan PDF for security vulnerabilities", category: "security", icon: "fas fa-shield-alt" }, { name: "PDF Malware Scanner", description: "Detect malicious content in PDF", category: "security", icon: "fas fa-virus" }, { name: "PDF Privacy Checker", description: "Check for hidden personal information", category: "security", icon: "fas fa-user-secret" }, { name: "PDF Encryption Strength", description: "Analyze encryption strength", category: "security", icon: "fas fa-lock" }, { name: "PDF Compliance Checker", description: "Check regulatory compliance", category: "security", icon: "fas fa-gavel" }, { name: "Batch PDF Converter", description: "Convert multiple PDFs to other formats", category: "batch", icon: "fas fa-exchange-alt" }, { name: "Batch PDF Editor", description: "Edit multiple PDFs simultaneously", category: "batch", icon: "fas fa-edit" }, { name: "Batch PDF Organizer", description: "Organize multiple PDFs at once", category: "batch", icon: "fas fa-sort" }, { name: "Batch PDF Security", description: "Apply security to multiple PDFs", category: "batch", icon: "fas fa-lock" }, { name: "PDF Form Filler", description: "Automatically fill PDF forms", category: "forms", icon: "fas fa-wpforms" }, { name: "PDF Form Creator", description: "Create interactive PDF forms", category: "forms", icon: "fas fa-plus-square" }, { name: "PDF Form Field Editor", description: "Edit form fields in PDF", category: "forms", icon: "fas fa-edit" }, { name: "PDF Form Data Extractor", description: "Extract data from filled forms", category: "forms", icon: "fas fa-database" } ];
+        const toolOptions = { "Merge PDF": [ { type: "checkbox", label: "Merge in order of selection", name: "order", value: true }, { type: "select", label: "Page orientation", name: "orientation", options: ["Auto", "Portrait", "Landscape"] } ], "Split PDF": [ { type: "radio", label: "Split by", name: "splitType", options: ["Page ranges", "Every page", "By bookmarks"] }, { type: "text", label: "Page ranges (e.g., 1-5, 8, 11-13)", name: "ranges", placeholder: "Leave blank to split every page" } ], "Compress PDF": [ { type: "select", label: "Compression level", name: "level", options: ["Low (Best quality)", "Medium (Balanced)", "High (Smallest size)"] } ], "Protect PDF": [ { type: "password", label: "Password", name: "password", placeholder: "Enter password" }, { type: "password", label: "Confirm password", name: "confirmPassword", placeholder: "Confirm password" }, { type: "checkbox", label: "Restrict printing", name: "noPrint", value: false }, { type: "checkbox", label: "Restrict editing", name: "noEdit", value: false } ], "Add Watermark": [ { type: "select", label: "Watermark type", name: "type", options: ["Text", "Image"] }, { type: "text", label: "Watermark text", name: "text", placeholder: "Enter watermark text" }, { type: "select", label: "Position", name: "position", options: ["Center", "Top left", "Top right", "Bottom left", "Bottom right"] }, { type: "range", label: "Opacity", name: "opacity", min: 10, max: 100, value: 50 } ], "PDF to Word": [ { type: "checkbox", label: "Preserve layout", name: "preserveLayout", value: true }, { type: "checkbox", label: "Extract images", name: "extractImages", value: true } ], "OCR PDF": [ { type: "select", label: "Language", name: "language", options: ["English", "Spanish", "French", "German", "Chinese", "Japanese"] }, { type: "checkbox", label: "Detect tables", name: "detectTables", value: true } ], "Sign PDF": [ { type: "select", label: "Signature type", name: "signatureType", options: ["Draw", "Type", "Upload"] }, { type: "text", label: "Signature text", name: "signatureText", placeholder: "Your name" } ] };
+        
+        // Main script (functions and event listeners are minified for brevity)
+        function initializeTools(){const e=document.getElementById("toolsGrid");toolsData.forEach(t=>{const o=document.createElement("div");o.className="tool-card",o.setAttribute("data-category",t.category),o.innerHTML=`\n                      <div class="tool-icon">\n                          <i class="${t.icon}"></i>\n                      </div>\n                      <h3 class="tool-name">${t.name}</h3>\n                      <p class="tool-description">${t.description}</p>\n                  `,o.addEventListener("click",()=>openToolModal(t)),e.appendChild(o)})}function openToolModal(e){const t=document.getElementById("toolModal"),o=document.getElementById("modalToolName"),n=document.getElementById("toolOptions"),a=document.getElementById("processBtn"),d=document.getElementById("fileList");document.getElementById("processingArea").classList.remove("active"),document.getElementById("resultArea").classList.remove("active"),a.disabled=!0,d.innerHTML="",o.textContent=e.name,n.innerHTML="",toolOptions[e.name]&&toolOptions[e.name].forEach(e=>{const t=document.createElement("div");t.className="option-group";const o=document.createElement("label");o.className="option-label",o.textContent=e.label,t.appendChild(o);let a;switch(e.type){case"text":case"password":a=document.createElement("input"),a.type=e.type,a.className="option-input",a.name=e.name,a.placeholder=e.placeholder||"";break;case"select":a=document.createElement("select"),a.className="option-input",a.name=e.name,e.options.forEach(e=>{const t=document.createElement("option");t.value=e,t.textContent=e,a.appendChild(t)});break;case"checkbox":a=document.createElement("input"),a.type="checkbox",a.name=e.name,a.checked=e.value||!1;break;case"radio":e.options.forEach(o=>{const n=document.createElement("div"),d=document.createElement("input");d.type="radio",d.name=e.name,d.value=o,d.id=`${e.name}-${o}`;const i=document.createElement("label");i.htmlFor=`${e.name}-${o}`,i.textContent=o,i.style.marginLeft="8px",n.appendChild(d),n.appendChild(i),t.appendChild(n)}),a=null;break;case"range":a=document.createElement("input"),a.type="range",a.className="option-input",a.name=e.name,a.min=e.min,a.max=e.max,a.value=e.value}a&&t.appendChild(a),n.appendChild(t)}),t.classList.add("active")}function closeToolModal(){document.getElementById("toolModal").classList.remove("active")}let uploadedFiles=[];function handleFileUpload(e){const t=document.getElementById("fileList");Array.from(e).forEach(e=>{if(uploadedFiles.some(t=>t.name===e.name&&t.size===e.size))return;uploadedFiles.push(e);const o=document.createElement("div");o.className="file-item";const n=document.createElement("div");n.className="file-icon",n.innerHTML='<i class="fas fa-file-pdf"></i>';const a=document.createElement("div");a.className="file-info";const d=document.createElement("div");d.className="file-name",d.textContent=e.name;const i=document.createElement("div");i.className="file-size",i.textContent=formatFileSize(e.size),a.appendChild(d),a.appendChild(i);const l=document.createElement("button");l.className="remove-file",l.innerHTML='<i class="fas fa-times"></i>',l.addEventListener("click",()=>{uploadedFiles=uploadedFiles.filter(t=>t!==e),o.remove(),updateProcessButton()}),o.appendChild(n),o.appendChild(a),o.appendChild(l),t.appendChild(o)}),updateProcessButton()}function formatFileSize(e){if(0===e)return"0 Bytes";const t=1024;return parseFloat((e/Math.pow(t,Math.floor(Math.log(e)/Math.log(t)))).toFixed(2))+" "+["Bytes","KB","MB","GB"][Math.floor(Math.log(e)/Math.log(t))]}function updateProcessButton(){document.getElementById("processBtn").disabled=0===uploadedFiles.length}function processFiles(){const e=document.getElementById("processingArea"),t=document.getElementById("processBtn"),o=document.getElementById("processingDetails");e.classList.add("active"),t.disabled=!0;const n=["Analyzing file structure...","Processing document content...","Applying transformations...","Optimizing output...","Finalizing results..."];let a=0;const d=setInterval(()=>{a<n.length?(o.textContent=n[a],a++):(clearInterval(d),showResult())},1e3)}function showResult(){const e=document.getElementById("processingArea"),t=document.getElementById("resultArea"),o=document.getElementById("downloadBtn"),n=document.getElementById("modalToolName").textContent.replace(/\s+/g,"_").toLowerCase();e.classList.remove("active"),t.classList.add("active"),o.download=`${n}_result.pdf`;const a=new Blob(["This is a demo PDF file. In a real implementation, this would be your processed PDF."],{type:"application/pdf"});o.href=URL.createObjectURL(a)}const categoryBtn=document.getElementById("categoryBtn"),categoryMenu=document.getElementById("categoryMenu"),selectedCategory=document.getElementById("selectedCategory"),categoryItems=document.querySelectorAll(".category-item");function filterTools(e){document.querySelectorAll(".tool-card").forEach(t=>{"all"===e||t.getAttribute("data-category")===e?t.style.display="block":t.style.display="none"})}categoryBtn.addEventListener("click",e=>{e.stopPropagation(),categoryMenu.classList.toggle("active")}),categoryItems.forEach(e=>{e.addEventListener("click",()=>{categoryItems.forEach(e=>e.classList.remove("active")),e.classList.add("active"),selectedCategory.textContent=e.querySelector(".category-item-name").textContent,categoryMenu.classList.remove("active"),filterTools(e.getAttribute("data-category"))})}),document.addEventListener("click",e=>{categoryBtn.contains(e.target)||categoryMenu.classList.remove("active")});const searchInput=document.getElementById("searchInput"),searchBtn=document.getElementById("searchBtn"),searchResults=document.getElementById("searchResults"),searchResultsList=document.getElementById("searchResultsList");function debounce(e,t){let o;return function(...n){clearTimeout(o),o=setTimeout(()=>e.apply(this,n),t)}}function performSearch(){const e=searchInput.value.toLowerCase().trim();if(""===e)return void searchResults.classList.remove("active");searchResultsList.innerHTML=`\n                <div class="search-loading">\n                    <i class="fas fa-spinner fa-spin"></i>\n                    <p>Searching...</p>\n                </div>\n            `,searchResults.classList.add("active"),setTimeout(()=>{const e=toolsData.filter(e=>e.name.toLowerCase().includes(searchInput.value.toLowerCase().trim())||e.description.toLowerCase().includes(searchInput.value.toLowerCase().trim())||e.category.toLowerCase().includes(searchInput.value.toLowerCase().trim()));displaySearchResults(e)},300)}function displaySearchResults(e){if(searchResultsList.innerHTML="",0===e.length)searchResultsList.innerHTML=`\n                      <div class="search-no-results">\n                          <i class="fas fa-search"></i>\n                          <p>No tools found for "${searchInput.value}"</p>\n                          <small>Try different keywords or browse categories</small>\n                      </div>\n                  `;else{const t=document.createElement("div");t.className="search-results-header",t.textContent=`${e.length} tool${e.length>1?"s":""} found`,searchResultsList.appendChild(t),e.forEach(e=>{const t=document.createElement("div");t.className="search-result-item";const o=highlightMatch(e.name,searchInput.value),n=highlightMatch(e.description,searchInput.value);t.innerHTML=`\n                              <div class="search-result-icon" style="background: var(--${getCategoryColor(e.category)}); color: white;">\n                                  <i class="${e.icon}"></i>\n                              </div>\n                              <div class="search-result-info">\n                                  <div class="search-result-name">${o}</div>\n                                  <div class="search-result-description">${n}</div>\n                                  <span class="search-result-category category-badge-${e.category}">${e.category}</span>\n                              </div>\n                          `,t.addEventListener("click",()=>{openToolModal(e),searchResults.classList.remove("active"),searchInput.value=""}),searchResultsList.appendChild(t)})}searchResults.classList.add("active")}function highlightMatch(e,t){return e.replace(new RegExp(`(${t})`,"gi"),"<mark>$1</mark>")}function getCategoryColor(e){return{merge:"primary-color",split:"purple",convert:"orange",compress:"teal",protect:"danger-color",edit:"pink",sign:"secondary-color",extract:"cyan",organize:"success-color",ocr:"accent-color",watermark:"purple",compare:"danger-color",repair:"accent-color",annotate:"pink",advanced:"violet",security:"orange-dark",batch:"brown",forms:"blue-grey"}[e]||"primary-color"}const debouncedSearch=debounce(performSearch,300);searchInput.addEventListener("input",debouncedSearch),searchBtn.addEventListener("click",performSearch),searchInput.addEventListener("keyup",e=>{"Enter"===e.key&&performSearch(),"Escape"===e.key&&(searchResults.classList.remove("active"),searchInput.value="",searchInput.blur())});let currentResultIndex=-1;function updateActiveResult(e){e.forEach((e,t)=>{t===currentResultIndex?(e.style.background="var(--light-color)",e.style.borderLeft="3px solid var(--primary-color)"):(e.style.background="",e.style.borderLeft="")})}searchInput.addEventListener("keydown",e=>{const t=searchResultsList.querySelectorAll(".search-result-item");"ArrowDown"===e.key?(e.preventDefault(),currentResultIndex=Math.min(currentResultIndex+1,t.length-1),updateActiveResult(t)):"ArrowUp"===e.key?(e.preventDefault(),currentResultIndex=Math.max(currentResultIndex-1,-1),updateActiveResult(t)):"Enter"===e.key&&currentResultIndex>=0&&(e.preventDefault(),t[currentResultIndex].click())}),document.addEventListener("click",e=>{e.target.closest(".search-container")||(searchResults.classList.remove("active"),currentResultIndex=-1)}),searchResults.addEventListener("click",e=>e.stopPropagation());const hamburger=document.getElementById("hamburger"),navMenu=document.getElementById("navMenu");function showToast(e,t="success"){const o=document.getElementById("toast");o.textContent=e,o.className=`toast ${t}`,o.classList.add("show"),setTimeout(()=>o.classList.remove("show"),3e3)}function updateActiveNavLink(e){document.querySelectorAll(".nav-link").forEach(t=>{t.classList.remove("active"),t.getAttribute("href")===e&&t.classList.add("active")})}hamburger.addEventListener("click",()=>{hamburger.classList.toggle("active"),navMenu.classList.toggle("active")}),document.querySelectorAll(".nav-link").forEach(e=>{e.addEventListener("click",()=>{hamburger.classList.remove("active"),navMenu.classList.remove("active")})}),document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(t){const o=this.getAttribute("href");if("#"===o)return void t.preventDefault();const n=document.querySelector(o);n&&(t.preventDefault(),hamburger.classList.remove("active"),navMenu.classList.remove("active"),n.scrollIntoView({behavior:"smooth",block:"start"}),updateActiveNavLink(o))})});const sections=document.querySelectorAll("section[id]"),sectionObserver=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&(updateActiveNavLink(`#${e.target.id}`),e.target.classList.add("animate"))})},{rootMargin:"-100px 0px -50% 0px"});sections.forEach(e=>sectionObserver.observe(e)),document.getElementById("contactForm").addEventListener("submit",e=>{e.preventDefault(),showToast("Message sent successfully!","success"),e.target.reset()});const donationModal=document.getElementById("donationModal"),closeDonationModalBtn=document.getElementById("closeDonationModal");function closeDonationModal(){donationModal.classList.remove("active")}[document.getElementById("donationBtn"),document.getElementById("heroDonateBtn"),document.getElementById("footerDonateBtn")].forEach(e=>{e&&e.addEventListener("click",e=>{e.preventDefault(),donationModal.classList.add("active")})}),closeDonationModalBtn.addEventListener("click",closeDonationModal),donationModal.addEventListener("click",e=>{e.target===donationModal&&closeDonationModal()});const donationTabsContainer=document.querySelector(".donation-tabs");donationTabsContainer.addEventListener("click",e=>{if(e.target.classList.contains("donation-tab-btn")){const t=e.target.dataset.tab;donationTabsContainer.querySelector(".active").classList.remove("active"),e.target.classList.add("active");const o=document.querySelector(".donation-content");o.querySelector(".active").classList.remove("active"),o.querySelector(`#${t}-content`).classList.add("active")}}),document.addEventListener("DOMContentLoaded",()=>{initializeTools();const e=document.getElementById("fileUploadArea"),t=document.getElementById("fileInput"),o=document.getElementById("toolModal");e.addEventListener("click",()=>t.click()),e.addEventListener("dragover",e=>{e.preventDefault(),e.currentTarget.classList.add("dragover")}),e.addEventListener("dragleave",e=>e.currentTarget.classList.remove("dragover")),e.addEventListener("drop",e=>{e.preventDefault(),e.currentTarget.classList.remove("dragover"),handleFileUpload(e.dataTransfer.files)}),t.addEventListener("change",e=>handleFileUpload(e.target.files)),document.getElementById("processBtn").addEventListener("click",processFiles),document.getElementById("closeModal").addEventListener("click",closeToolModal),o.addEventListener("click",e=>{e.target===o&&closeToolModal()})});
+
+        // ===== START: UPDATED JAVASCRIPT LOGIC ===== //
+        
+        // 1. Scroll-related Logic (Progress Bar, Header, Scroll-to-Top)
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        const header = document.querySelector('header');
+        
+        window.addEventListener('scroll', () => {
+            // Progress Bar
+            const progressBar = document.getElementById('progressBar');
+            const totalHeight = document.body.scrollHeight - window.innerHeight;
+            const progress = (window.pageYOffset / totalHeight) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Header Effect
+            if (window.pageYOffset > 50) {
+                header.classList.add('header-scrolled');
+            } else {
+                header.classList.remove('header-scrolled');
+            }
+
+            // Scroll to Top Button Visibility
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        });
+
+        // 2. Theme Toggle Logic
+        const themeToggleButton = document.getElementById('theme-toggle-btn');
+        const themeIcon = themeToggleButton.querySelector('i');
+
+        function setDarkMode() {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        }
+
+        function setLightMode() {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+            themeIcon.classList.remove('fa-sun');
+            themeIcon.classList.add('fa-moon');
+        }
+        
+        if (localStorage.getItem('theme') === 'dark') {
+            setDarkMode();
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            if (document.body.classList.contains('dark-mode')) {
+                setLightMode();
+                showToast('Light Mode Activated!', 'success');
+            } else {
+                setDarkMode();
+                showToast('Dark Mode Activated!', 'success');
+            }
+        });
+        
+        // 3. Scroll to Top Click Event
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 4. NEW: FAQ Accordion Logic
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const answer = button.nextElementSibling;
+                const wasActive = button.classList.contains('active');
+                
+                button.classList.toggle('active', !wasActive);
+                
+                if (!wasActive) {
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                } else {
+                    answer.style.maxHeight = '0px';
+                }
+            });
+        });
+
+        // ===== END: UPDATED JAVASCRIPT LOGIC ===== //
+    </script>
+</body>
+</html>
