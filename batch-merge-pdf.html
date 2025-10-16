@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch PDF Merger - PDF Door</title>
+    
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables from Original Homepage */
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --danger-color: #ea4335;
+            --success-color: #34a853;
+            --warning-color: #fbbc04;
+            --donation-color: #f44336;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex-grow: 1;
+            padding-top: 64px;
+        }
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: background-color 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease;
+        }
+        nav {
+            max-width: 1140px; margin: 0 auto; padding: 0 15px;
+            display: flex; justify-content: space-between; align-items: center; height: 64px;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 12px; text-decoration: none;
+            font-weight: 600; font-size: 20px; color: var(--text-primary); transition: var(--transition);
+        }
+        .logo:hover { color: var(--primary-color); }
+        .logo .logo-icon {
+            width: 36px; height: 36px; background: var(--primary-color); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; color: white;
+            font-size: 18px; transition: var(--transition);
+        }
+        .logo:hover .logo-icon { background: var(--secondary-color); transform: rotate(10deg); }
+        .nav-menu { display: flex; list-style: none; gap: 30px; margin: 0; padding: 0; align-items: center; }
+        .nav-link {
+            color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 16px;
+            position: relative; transition: var(--transition); padding: 8px 0;
+        }
+        .nav-link:hover { color: var(--primary-color); }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px;
+            background: var(--primary-color); transition: all 0.3s ease; transform: translateX(-50%);
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* Donation Button */
+        .donation-btn {
+            background: var(--donation-color); color: white; padding: 8px 20px; border-radius: 6px;
+            font-weight: 500; font-size: 15px; border: none; cursor: pointer; transition: var(--transition);
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        .donation-btn:hover { background: #d32f2f; transform: translateY(-2px); }
+
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 4px; }
+        .hamburger span { width: 25px; height: 3px; background: var(--text-primary); transition: var(--transition); border-radius: 2px; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+        
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed; top: 64px; left: -100%; width: 100%; height: calc(100vh - 64px); background: white;
+                flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 30px;
+                transition: var(--transition); gap: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .nav-menu.active { left: 0; }
+            .hamburger { display: flex; }
+            .donation-btn { display: none; }
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: 500;
+            text-align: center; cursor: pointer; transition: all 0.2s; border: none;
+            font-size: 15px; text-decoration: none; box-sizing: border-box;
+        }
+        .btn-primary { background-color: #4285F4; color: white; }
+        .btn-primary:hover { background-color: #3367D6; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover { background-color: #2e7d32; }
+        .btn:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; }
+        
+        /* Main Tool Card & Upload Area */
+        .tool-card-main { background-color: white; border-radius: 8px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e9ecef; }
+        .upload-box { border: 2px dashed #ced4da; border-radius: 8px; padding: 40px; text-align: center; background-color: #fdfdff; transition: all 0.2s; margin-bottom: 24px; }
+        .upload-box.drag-over { border-color: #4285F4; background-color: #e8f0fe; }
+        .upload-icon { font-size: 28px; color: #4285F4; }
+
+        /* File List & Form Inputs */
+        .file-item { display: flex; align-items: center; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; cursor: grab; transition: all 0.2s; position: relative; }
+        .file-item:not(:last-child) { margin-bottom: 12px; }
+        .file-item.dragging { opacity: 0.5; background: #dbeafe; }
+        .file-item:active { cursor: grabbing; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; color: #495057; font-size: 0.9rem;}
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; transition: all 0.2s; box-sizing: border-box; }
+        .form-control:focus { outline: none; border-color: #4285F4; box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2); }
+
+        /* Advanced Options */
+        .advanced-options { 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-left: 4px solid var(--primary-color);
+        }
+        .advanced-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .advanced-content {
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        .advanced-content.active {
+            display: block;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* How to Use Section */
+        .how-to-card { background: white; border-radius: 8px; padding: 24px; text-align: center; border: 1px solid #e9ecef; }
+        .step-circle { width: 40px; height: 40px; background-color: #e8f0fe; color: #4285F4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700; font-size: 1.1rem; }
+
+        /* Related Tools Styles */
+        .custom-tool-card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); text-align: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid #e9ecef; position: relative; overflow: hidden; text-decoration: none; display: block; }
+        .custom-tool-card::before { content: ''; position: absolute; top: 0; left: 50%; right: 50%; height: 3px; background: #4285F4; transition: all 0.3s ease; }
+        .custom-tool-card:hover::before { left: 0; right: 0; }
+        .custom-tool-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .custom-tool-card .tool-icon { font-size: 32px; color: #4285F4; margin-bottom: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
+        .custom-tool-card:hover .tool-icon { transform: scale(1.2) rotate(5deg); }
+        .custom-tool-card .tool-name { font-size: 1.1rem; font-weight: 600; color: #343a40; margin: 0 0 8px; transition: color 0.3s ease; }
+        .custom-tool-card:hover .tool-name { color: #4285F4; }
+        .custom-tool-card .tool-description { font-size: 0.9rem; color: #6c757d; line-height: 1.5; }
+        
+        /* Donation Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.6); z-index: 2000; align-items: center; justify-content: center; animation: fadeIn .3s ease; }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,.3); animation: slideUp .3s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
+        .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); transition: var(--transition); }
+        .close-modal:hover { color: var(--danger-color); transform: scale(1.1); }
+        .modal-body { padding: 24px; }
+        .donation-tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .donation-tab-btn { flex: 1; padding: 12px 10px; cursor: pointer; border: none; background: 0 0; font-size: 14px; font-weight: 500; color: var(--text-secondary); border-bottom: 3px solid transparent; transition: var(--transition); }
+        .donation-tab-btn:hover { color: var(--primary-color); background: var(--light-color); }
+        .donation-tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .donation-content { text-align: center; }
+        .donation-panel { display: none; animation: fadeIn .5s; }
+        .donation-panel.active { display: block; }
+
+        /* Footer */
+        footer { background-color: #343a40; color: #f8f9fa; padding: 48px 0; margin-top: 64px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px; }
+        .footer-col h4 { margin: 0 0 16px; font-size: 1.1rem; }
+        .footer-col p, .footer-col a { color: #adb5bd; text-decoration: none; font-size: 0.95rem; }
+        .footer-col a:hover { color: white; text-decoration: underline; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col li:not(:last-child) { margin-bottom: 10px; }
+
+        /* ===== MOBILE RESPONSIVE STYLES ===== */
+        @media (max-width: 768px) {
+            main .container { padding: 0 15px; }
+            .main-tool-grid { display: flex; flex-direction: column; gap: 20px; }
+            .tool-card-main { padding: 20px; margin-bottom: 20px; }
+            .upload-box { padding: 30px 20px; }
+            .file-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .file-item .file-info { width: 100%; }
+            .file-item .remove-btn { align-self: flex-end; }
+            .btn { width: 100%; margin-bottom: 10px; }
+            .how-to-grid { display: flex; flex-direction: column; gap: 20px; }
+            .how-to-card { padding: 20px; }
+            .related-tools-grid { grid-template-columns: 1fr; gap: 15px; }
+            .ad-sidebar { min-height: 200px; order: -1; }
+            .ad-horizontal { height: 90px; }
+            .ad-mobile-banner { height: 100px; }
+            .footer-grid { grid-template-columns: 1fr; gap: 20px; }
+            .modal-content { width: 95%; margin: 20px; }
+            h1 { font-size: 2rem !important; }
+            h2 { font-size: 1.5rem !important; }
+        }
+
+        @media (max-width: 480px) {
+            .tool-card-main { padding: 15px; }
+            .upload-box { padding: 20px 15px; }
+            .upload-icon { font-size: 24px; }
+            .step-circle { width: 35px; height: 35px; font-size: 1rem; }
+            .custom-tool-card { padding: 20px 15px; }
+            .custom-tool-card .tool-icon { font-size: 28px; }
+        }
+
+        /* ===== AD SPACE STYLES ===== */
+        .ad-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #ced4da;
+            text-align: center;
+            color: #6c757d;
+            overflow: hidden;
+        }
+        
+        .ad-sidebar {
+            width: 300px;
+            height: 600px;
+        }
+        
+        .ad-horizontal {
+            width: 728px;
+            height: 90px;
+            max-width: 100%;
+        }
+        
+        .ad-mobile-banner {
+            width: 320px;
+            height: 100px;
+            max-width: 100%;
+        }
+        
+        .ad-square {
+            width: 250px;
+            height: 250px;
+        }
+        
+        .ad-content {
+            padding: 15px;
+        }
+        
+        .ad-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Pro Feature Badge */
+        .pro-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 10px;
+            display: inline-block;
+        }
+
+        /* Feature Badges */
+        .feature-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* File Preview */
+        .file-preview {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .page-counter {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 350px;
+            border-left: 4px solid var(--primary-color);
+            animation: slideInRight 0.3s ease;
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.error { border-left-color: var(--danger-color); }
+        .toast.warning { border-left-color: var(--warning-color); }
+        .toast.info { border-left-color: var(--primary-color); }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon { color: var(--success-color); }
+        .toast.error .toast-icon { color: var(--danger-color); }
+        .toast.warning .toast-icon { color: var(--warning-color); }
+        .toast.info .toast-icon { color: var(--primary-color); }
+
+        .toast-content {
+            flex-grow: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 16px;
+            padding: 4px;
+        }
+
+        /* Batch Specific Styles */
+        .batch-container {
+            margin-bottom: 24px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .batch-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .batch-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .batch-content {
+            padding: 20px;
+        }
+
+        .add-batch-btn {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <span>PDF Door</span>
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="index.html#tools" class="nav-link">All Tools</a></li>
+                <li><a href="index.html#features" class="nav-link">Features</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                <li>
+                    <a href="#" class="donation-btn" id="headerDonationBtn">
+                        <i class="fas fa-heart"></i>
+                        <span>Donate</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container" style="padding-top: 48px; padding-bottom: 48px;">
+        <!-- Header Ad Space -->
+        <div class="ad-container ad-horizontal" style="margin: 0 auto 40px;">
+            <div class="ad-content">
+                <div class="ad-label">Advertisement</div>
+                <p>Leaderboard Ad (728x90)</p>
+                <p style="font-weight: 700; font-size: 1.1rem;">Your Ad Here</p>
+            </div>
+        </div>
+
+        <div class="text-center" style="margin-bottom: 40px;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; color: #343a40;">Batch PDF Merger</h1>
+            <p style="font-size: 1.1rem; color: #6c757d; margin-top: 8px;">Merge multiple sets of PDF files simultaneously with batch processing.</p>
+        </div>
+
+        <div class="main-tool-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px;">
+            <div class="tool-card-main">
+                <div id="batches-container">
+                    <!-- Batch containers will be added here dynamically -->
+                </div>
+
+                <button id="add-batch-btn" class="btn btn-secondary add-batch-btn">
+                    <i class="fas fa-plus" style="margin-right: 8px;"></i>
+                    Add Another Batch
+                </button>
+                
+                <div class="advanced-options">
+                    <div class="advanced-header" id="advancedToggle">
+                        <h3 style="margin: 0; display: flex; align-items: center;">
+                            <i class="fas fa-cogs" style="margin-right: 10px; color: var(--primary-color);"></i>
+                            Global Settings
+                        </h3>
+                        <i class="fas fa-chevron-down" id="advancedArrow"></i>
+                    </div>
+                    <div class="advanced-content" id="advancedContent">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="merge-options" class="form-label">Merge Strategy</label>
+                                <select id="merge-options" class="form-control">
+                                    <option value="sequential">Sequential</option>
+                                    <option value="bookmarks">With Bookmarks</option>
+                                    <option value="optimized">Optimized for Web</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quality" class="form-label">Output Quality</label>
+                                <select id="quality" class="form-control">
+                                    <option value="high">High Quality</option>
+                                    <option value="medium">Medium Quality</option>
+                                    <option value="low">Low Quality (Smaller Size)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Additional Features</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                                <label style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="add-bookmarks" checked>
+                                    <span>Add Bookmarks</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="add-page-numbers">
+                                    <span>Add Page Numbers</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="optimize-images" checked>
+                                    <span>Optimize Images</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 16px;">
+                     <button id="merge-all-btn" style="flex-grow: 1; padding: 12px;" class="btn btn-primary" disabled>
+                        <i class="fas fa-bolt" style="margin-right: 8px;"></i>
+                        Merge All Batches
+                     </button>
+                     <button id="reset-all-btn" style="flex-grow: 1; padding: 12px;" class="btn btn-secondary">Reset All</button>
+                </div>
+                
+                <div id="processing-feedback" style="text-align: center; margin-top: 16px; display: none;">
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <i class="fas fa-spinner fa-spin" style="color: #4285F4; font-size: 24px;"></i>
+                    <p style="color: #6c757d; margin-top: 8px;" id="progressText">Initializing batch processing...</p>
+                </div>
+            </div>
+
+            <aside>
+                <div class="ad-container ad-sidebar">
+                    <div class="ad-content">
+                        <div class="ad-label">Advertisement</div>
+                        <p>Sidebar Ad (300x600)</p>
+                        <p style="font-weight: 700; font-size: 1.1rem;">Your Ad Here</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Mobile Ad Banner (Hidden on Desktop) -->
+        <div class="ad-container ad-mobile-banner" style="display: none; margin: 30px auto;">
+            <div class="ad-content">
+                <div class="ad-label">Advertisement</div>
+                <p>Mobile Banner (320x100)</p>
+                <p style="font-weight: 700; font-size: 1rem;">Your Ad Here</p>
+            </div>
+        </div>
+
+        <section style="margin-top: 80px;">
+            <h2 style="font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 40px; color: #343a40;">How Batch PDF Merger Works</h2>
+            <div class="how-to-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+                <div class="how-to-card">
+                    <div class="step-circle"><i class="fas fa-layer-group"></i></div>
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 8px;">Create Multiple Batches</h3>
+                    <p style="color: #6c757d; font-size: 0.95rem;">Add as many batches as you need, each representing a separate merged PDF output.</p>
+                </div>
+                <div class="how-to-card">
+                    <div class="step-circle"><i class="fas fa-file-upload"></i></div>
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 8px;">Upload Files to Each Batch</h3>
+                    <p style="color: #6c757d; font-size: 0.95rem;">Add PDF files to each batch using drag & drop or file selection.</p>
+                </div>
+                <div class="how-to-card">
+                    <div class="step-circle"><i class="fas fa-download"></i></div>
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 8px;">Download All Merged Files</h3>
+                    <p style="color: #6c757d; font-size: 0.95rem;">Process all batches at once and download multiple merged PDF files simultaneously.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Middle Horizontal Ad -->
+        <div style="margin-top: 80px; text-align: center;">
+            <div class="ad-container ad-horizontal">
+                <div class="ad-content">
+                    <div class="ad-label">Advertisement</div>
+                    <p>Leaderboard Ad (728x90)</p>
+                    <p style="font-weight: 700; font-size: 1.1rem;">Your Ad Here</p>
+                </div>
+            </div>
+        </div>
+
+        <section style="margin-top: 80px;">
+             <h2 style="font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 40px; color: #343a40;">Related PDF Tools</h2>
+             <div class="related-tools-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                 <a href="merge-pdf.html" class="custom-tool-card">
+                     <div class="tool-icon"><i class="fas fa-object-group"></i></div>
+                     <h3 class="tool-name">Merge PDF</h3>
+                     <p class="tool-description">Combine multiple PDF files into one single document.</p>
+                 </a>
+                 <a href="pdf-merger-pro.html" class="custom-tool-card">
+                    <div class="tool-icon"><i class="fas fa-crown"></i></div>
+                     <h3 class="tool-name">PDF Merger Pro</h3>
+                     <p class="tool-description">Advanced PDF merging with intelligent page selection and custom ordering.</p>
+                 </a>
+                 <a href="combine-pdf-pages.html" class="custom-tool-card">
+                    <div class="tool-icon"><i class="fas fa-copy"></i></div>
+                     <h3 class="tool-name">Combine PDF Pages</h3>
+                     <p class="tool-description">Merge specific pages from multiple PDFs into one document.</p>
+                 </a>
+                 <a href="split-pdf.html" class="custom-tool-card">
+                     <div class="tool-icon"><i class="fas fa-cut"></i></div>
+                     <h3 class="tool-name">Split PDF</h3>
+                     <p class="tool-description">Split a PDF file into multiple documents or extract specific pages.</p>
+                 </a>
+                  <a href="compress-pdf.html" class="custom-tool-card">
+                    <div class="tool-icon"><i class="fas fa-compress-arrows-alt"></i></div>
+                     <h3 class="tool-name">Compress PDF</h3>
+                     <p class="tool-description">Reduce PDF file size without sacrificing significant quality.</p>
+                 </a>
+             </div>
+        </section>
+
+        <!-- Bottom Square Ad -->
+        <div style="margin-top: 80px; text-align: center;">
+            <div class="ad-container ad-square" style="margin: 0 auto;">
+                <div class="ad-content">
+                    <div class="ad-label">Advertisement</div>
+                    <p>Square Ad (250x250)</p>
+                    <p style="font-weight: 700; font-size: 1rem;">Your Ad Here</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- DONATION MODAL HTML -->
+    <div class="modal" id="donationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-heart" style="color: var(--donation-color);"></i> Support Our Work</h3>
+                <button class="close-modal" id="closeDonationModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="donation-tabs">
+                    <button class="donation-tab-btn active" data-tab="upi">UPI</button>
+                    <button class="donation-tab-btn" data-tab="paypal">PayPal</button>
+                    <button class="donation-tab-btn" data-tab="coffee">Buy Me a Coffee</button>
+                </div>
+                <div class="donation-content">
+                    <div id="upi-content" class="donation-panel active">
+                        <p>Scan the QR code with any UPI app to donate.</p>
+                        <img src="https://i.ibb.co/PRrQrZg/photo-2025-10-10-21-21-56.jpg" alt="UPI QR Code" style="max-width: 250px; border-radius: 8px;">
+                        <p style="margin-top: 16px; font-weight: 500; color: var(--text-primary);">UPI ID: filelooter-1@okaxis</p>
+                    </div>
+                    <div id="paypal-content" class="donation-panel">
+                        <p>Click the button below to securely donate via PayPal.</p>
+                        <a href="https://www.paypal.com/paypalme/gaurav9675?locale.x=en_GB&country.x=IN" target="_blank" class="btn" style="background-color: #00457C; color: white; width: 100%;">
+                            <i class="fab fa-paypal"></i> Donate with PayPal
+                        </a>
+                    </div>
+                    <div id="coffee-content" class="donation-panel">
+                        <p>If you find this tool helpful, consider buying me a coffee!</p>
+                        <a href="#" target="_blank" class="btn" style="background-color: #FFDD00; color: #000; width: 100%;">
+                            <i class="fas fa-coffee"></i> Buy Me a Coffee
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>PDF Door</h4>
+                <p>Your complete PDF management solution with professional tools for all your document needs.</p>
+            </div>
+             <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#tools">All Tools</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li><a href="index.html#about">About Us</a></li>
+                </ul>
+            </div>
+             <div class="footer-col">
+                <h4>Popular Tools</h4>
+                 <ul>
+                    <li><a href="merge-pdf.html">Merge PDF</a></li>
+                    <li><a href="pdf-merger-pro.html">PDF Merger Pro</a></li>
+                    <li><a href="batch-merge-pdf.html">Batch PDF Merger</a></li>
+                    <li><a href="split-pdf.html">Split PDF</a></li>
+                </ul>
+            </div>
+             <div class="footer-col">
+                <h4>Support</h4>
+                 <ul>
+                    <li><a href="help-center.html">Help Center</a></li>
+                    <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    <li><a href="terms-of-service.html">Terms of Service</a></li>
+                    <li><a href="#" id="footerDonationBtn">Donate</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Hamburger Menu & Header Scroll Logic
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('navMenu');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Donation Modal Script
+        const donationModal = document.getElementById('donationModal');
+        const headerDonationBtn = document.getElementById('headerDonationBtn');
+        const footerDonationBtn = document.getElementById('footerDonationBtn');
+        const closeDonationModalBtn = document.getElementById('closeDonationModal');
+        const donationTabs = document.querySelector('.donation-tabs');
+
+        function openDonationModal(e) {
+            e.preventDefault();
+            donationModal.classList.add('active');
+        }
+        function closeDonationModal() {
+            donationModal.classList.remove('active');
+        }
+
+        headerDonationBtn.addEventListener('click', openDonationModal);
+        footerDonationBtn.addEventListener('click', openDonationModal);
+        closeDonationModalBtn.addEventListener('click', closeDonationModal);
+        donationModal.addEventListener('click', (e) => {
+            if (e.target === donationModal) {
+                closeDonationModal();
+            }
+        });
+        
+        donationTabs.addEventListener('click', e => {
+            if (e.target.classList.contains('donation-tab-btn')) {
+                const currentActive = donationTabs.querySelector('.active');
+                if(currentActive) currentActive.classList.remove('active');
+                e.target.classList.add('active');
+
+                const targetPanelId = e.target.dataset.tab + '-content';
+                const contentArea = document.querySelector('.donation-content');
+                
+                const currentActivePanel = contentArea.querySelector('.active');
+                if(currentActivePanel) currentActivePanel.classList.remove('active');
+                
+                document.getElementById(targetPanelId).classList.add('active');
+            }
+        });
+
+        // Mobile Ad Display Logic
+        function checkScreenSize() {
+            const mobileAd = document.querySelector('.ad-mobile-banner');
+            if (window.innerWidth <= 768) {
+                mobileAd.style.display = 'flex';
+            } else {
+                mobileAd.style.display = 'none';
+            }
+        }
+        
+        // Check on load and resize
+        window.addEventListener('load', checkScreenSize);
+        window.addEventListener('resize', checkScreenSize);
+
+        // Advanced Options Toggle
+        const advancedToggle = document.getElementById('advancedToggle');
+        const advancedContent = document.getElementById('advancedContent');
+        const advancedArrow = document.getElementById('advancedArrow');
+
+        advancedToggle.addEventListener('click', () => {
+            advancedContent.classList.toggle('active');
+            advancedArrow.classList.toggle('fa-chevron-down');
+            advancedArrow.classList.toggle('fa-chevron-up');
+        });
+
+        // Enhanced Toast Notification System
+        function showToast(message, type = 'info', duration = 5000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            const titles = {
+                success: 'Success',
+                error: 'Error',
+                warning: 'Warning',
+                info: 'Information'
+            };
+
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} toast-icon"></i>
+                <div class="toast-content">
+                    <div class="toast-title">${titles[type]}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Close button functionality
+            const closeBtn = toast.querySelector('.toast-close');
+            closeBtn.addEventListener('click', () => {
+                toast.remove();
+            });
+
+            // Auto remove after duration
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, duration);
+
+            return toast;
+        }
+
+        // Batch PDF Merger Tool JavaScript - FIXED VERSION
+        document.addEventListener('DOMContentLoaded', () => {
+            const batchesContainer = document.getElementById('batches-container');
+            const addBatchBtn = document.getElementById('add-batch-btn');
+            const mergeAllBtn = document.getElementById('merge-all-btn');
+            const resetAllBtn = document.getElementById('reset-all-btn');
+            const processingFeedback = document.getElementById('processing-feedback');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            let batchCount = 0;
+            let batches = [];
+
+            // Initialize with one batch
+            addBatch();
+
+            addBatchBtn.addEventListener('click', addBatch);
+            mergeAllBtn.addEventListener('click', mergeAllBatches);
+            resetAllBtn.addEventListener('click', resetAll);
+
+            function addBatch() {
+                batchCount++;
+                const batchId = `batch-${batchCount}`;
+                
+                const batch = {
+                    id: batchId,
+                    files: [],
+                    container: null,
+                    fileList: null,
+                    filenameInput: null
+                };
+                
+                batches.push(batch);
+                
+                const batchHTML = `
+                    <div class="batch-container" id="${batchId}">
+                        <div class="batch-header">
+                            <div class="batch-title">
+                                <i class="fas fa-layer-group"></i>
+                                Batch ${batchCount}
+                            </div>
+                            <button class="remove-batch-btn" data-batch="${batchId}" style="background: none; border: none; cursor: pointer; color: #dc3545;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="batch-content">
+                            <div class="upload-box batch-upload-box">
+                                <input type="file" class="batch-file-input" multiple accept=".pdf" style="display: none;">
+                                <div class="batch-drop-zone">
+                                    <div style="margin-bottom: 16px;"><i class="fas fa-layer-group upload-icon"></i></div>
+                                    <p style="font-size: 1rem; color: #495057; font-weight: 500; margin:0;">Drag & Drop PDF files here</p>
+                                    <p style="color: #6c757d; margin: 8px 0 16px;">or</p>
+                                    <button class="btn btn-primary batch-select-files-btn">Select Files</button>
+                                </div>
+                            </div>
+                            <div class="batch-file-options" style="display: none;">
+                                <div class="batch-file-list" style="margin-bottom: 16px;"></div>
+                                <div class="form-group">
+                                    <label for="${batchId}-filename" class="form-label">Output File Name</label>
+                                    <input type="text" id="${batchId}-filename" class="form-control batch-filename" value="batch-${batchCount}-merged.pdf">
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-secondary batch-reset-btn" style="flex-grow: 1;">Reset Batch</button>
+                                    <button class="btn btn-success batch-merge-btn" style="flex-grow: 1;" disabled>Merge This Batch</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                batchesContainer.insertAdjacentHTML('beforeend', batchHTML);
+                
+                // Set up batch references
+                batch.container = document.getElementById(batchId);
+                batch.fileList = batch.container.querySelector('.batch-file-list');
+                batch.filenameInput = batch.container.querySelector('.batch-filename');
+                
+                // Set up event listeners for this batch
+                setupBatchEvents(batch);
+                
+                updateMergeAllButtonState();
+            }
+
+            function setupBatchEvents(batch) {
+                const fileInput = batch.container.querySelector('.batch-file-input');
+                const selectFilesBtn = batch.container.querySelector('.batch-select-files-btn');
+                const dropZone = batch.container.querySelector('.batch-drop-zone');
+                const uploadContainer = batch.container.querySelector('.batch-upload-box');
+                const fileOptionsContainer = batch.container.querySelector('.batch-file-options');
+                const removeBatchBtn = batch.container.querySelector('.remove-batch-btn');
+                const resetBatchBtn = batch.container.querySelector('.batch-reset-btn');
+                const mergeBatchBtn = batch.container.querySelector('.batch-merge-btn');
+
+                selectFilesBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => handleBatchFiles(e.target.files, batch));
+                
+                dropZone.addEventListener('dragover', (e) => { 
+                    e.preventDefault(); 
+                    uploadContainer.classList.add('drag-over'); 
+                });
+                
+                dropZone.addEventListener('dragleave', (e) => { 
+                    e.preventDefault(); 
+                    uploadContainer.classList.remove('drag-over'); 
+                });
+                
+                dropZone.addEventListener('drop', (e) => { 
+                    e.preventDefault(); 
+                    uploadContainer.classList.remove('drag-over'); 
+                    handleBatchFiles(e.dataTransfer.files, batch);
+                });
+
+                removeBatchBtn.addEventListener('click', () => removeBatch(batch.id));
+                resetBatchBtn.addEventListener('click', () => resetBatch(batch));
+                mergeBatchBtn.addEventListener('click', () => mergeBatch(batch));
+            }
+
+            function handleBatchFiles(newFiles, batch) {
+                const pdfFiles = Array.from(newFiles).filter(file => file.type === 'application/pdf');
+                if (pdfFiles.length === 0) { 
+                    showToast('Please select PDF files only.', 'error');
+                    return; 
+                }
+                
+                // Check file sizes (max 50MB each)
+                const maxSize = 50 * 1024 * 1024;
+                const oversizedFiles = pdfFiles.filter(file => file.size > maxSize);
+                if (oversizedFiles.length > 0) {
+                    showToast('Some files are too large. Maximum size is 50MB per file.', 'warning');
+                    // Only add files that are within size limit
+                    batch.files.push(...pdfFiles.filter(file => file.size <= maxSize));
+                } else {
+                    batch.files.push(...pdfFiles);
+                }
+                
+                renderBatchFileList(batch);
+                showToast(`${pdfFiles.length} PDF files added to batch`, 'success');
+            }
+
+            function renderBatchFileList(batch) {
+                batch.fileList.innerHTML = '';
+                const fileOptionsContainer = batch.container.querySelector('.batch-file-options');
+                fileOptionsContainer.style.display = batch.files.length > 0 ? 'block' : 'none';
+
+                batch.files.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.setAttribute('draggable', true);
+                    fileItem.dataset.index = index;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    
+                    fileItem.innerHTML = `
+                        <i class="fas fa-file-pdf" style="font-size: 20px; color: #dc3545; margin-right: 12px;"></i>
+                        <div style="flex-grow: 1;">
+                            <p style="font-weight: 500; color: #343a40; margin: 0; font-size: 0.95rem;">${file.name}</p>
+                            <p style="font-size: 0.8rem; color: #6c757d; margin: 2px 0 0;">${fileSize} MB</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="batch-remove-btn" data-index="${index}" style="background: none; border: none; cursor: pointer; color: #dc3545; padding: 8px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>`;
+                    batch.fileList.appendChild(fileItem);
+                });
+
+                updateBatchMergeButtonState(batch);
+                addBatchDragAndDropListeners(batch);
+                addBatchRemoveButtonListeners(batch);
+            }
+
+            function updateBatchMergeButtonState(batch) {
+                const mergeBatchBtn = batch.container.querySelector('.batch-merge-btn');
+                mergeBatchBtn.disabled = batch.files.length < 2;
+                if (batch.files.length >= 2) {
+                    mergeBatchBtn.innerHTML = `<i class="fas fa-bolt" style="margin-right: 8px;"></i> Merge ${batch.files.length} PDFs`;
+                } else {
+                    mergeBatchBtn.innerHTML = `<i class="fas fa-bolt" style="margin-right: 8px;"></i> Merge This Batch`;
+                }
+                
+                updateMergeAllButtonState();
+            }
+
+            function addBatchDragAndDropListeners(batch) {
+                const items = batch.fileList.querySelectorAll('.file-item');
+                let dragStartIndex;
+                items.forEach(item => {
+                    item.addEventListener('dragstart', (e) => { 
+                        dragStartIndex = +e.currentTarget.dataset.index; 
+                        setTimeout(() => e.currentTarget.classList.add('dragging'), 0); 
+                    });
+                    item.addEventListener('dragend', (e) => e.currentTarget.classList.remove('dragging'));
+                    item.addEventListener('dragover', (e) => e.preventDefault());
+                    item.addEventListener('drop', (e) => { 
+                        const dragEndIndex = +e.currentTarget.dataset.index; 
+                        swapBatchItems(batch, dragStartIndex, dragEndIndex); 
+                    });
+                });
+            }
+
+            function swapBatchItems(batch, fromIndex, toIndex) {
+                const item = batch.files.splice(fromIndex, 1)[0];
+                batch.files.splice(toIndex, 0, item);
+                renderBatchFileList(batch);
+            }
+            
+            function addBatchRemoveButtonListeners(batch) {
+                batch.fileList.querySelectorAll('.batch-remove-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = parseInt(e.currentTarget.dataset.index, 10);
+                        const removedFile = batch.files.splice(index, 1)[0];
+                        renderBatchFileList(batch);
+                        showToast(`Removed: ${removedFile.name}`, 'success');
+                    });
+                });
+            }
+
+            function removeBatch(batchId) {
+                if (batches.length <= 1) {
+                    showToast('You need at least one batch.', 'warning');
+                    return;
+                }
+                
+                const batchIndex = batches.findIndex(b => b.id === batchId);
+                if (batchIndex !== -1) {
+                    batches.splice(batchIndex, 1);
+                    document.getElementById(batchId).remove();
+                    
+                    // Renumber remaining batches
+                    renumberBatches();
+                    
+                    showToast('Batch removed successfully', 'success');
+                    updateMergeAllButtonState();
+                }
+            }
+
+            function renumberBatches() {
+                batchCount = 0;
+                batches.forEach((batch, index) => {
+                    batchCount++;
+                    const batchTitle = batch.container.querySelector('.batch-title');
+                    batchTitle.innerHTML = `<i class="fas fa-layer-group"></i> Batch ${batchCount}`;
+                    
+                    const filenameInput = batch.container.querySelector('.batch-filename');
+                    filenameInput.value = `batch-${batchCount}-merged.pdf`;
+                });
+            }
+
+            function resetBatch(batch) {
+                batch.files = [];
+                const fileInput = batch.container.querySelector('.batch-file-input');
+                fileInput.value = '';
+                batch.filenameInput.value = `batch-${batches.findIndex(b => b.id === batch.id) + 1}-merged.pdf`;
+                renderBatchFileList(batch);
+                showToast('Batch reset successfully', 'success');
+            }
+
+            function resetAll() {
+                batches.forEach(batch => {
+                    resetBatch(batch);
+                });
+                showToast('All batches reset successfully', 'success');
+            }
+
+            function updateMergeAllButtonState() {
+                const hasValidBatches = batches.some(batch => batch.files.length >= 2);
+                mergeAllBtn.disabled = !hasValidBatches;
+                
+                if (hasValidBatches) {
+                    const totalFiles = batches.reduce((sum, batch) => sum + batch.files.length, 0);
+                    mergeAllBtn.innerHTML = `<i class="fas fa-bolt" style="margin-right: 8px;"></i> Merge All Batches (${batches.length} batches, ${totalFiles} files)`;
+                } else {
+                    mergeAllBtn.innerHTML = `<i class="fas fa-bolt" style="margin-right: 8px;"></i> Merge All Batches`;
+                }
+            }
+
+            function updateProgress(percentage, message) {
+                progressBar.style.width = `${percentage}%`;
+                progressText.textContent = message;
+            }
+
+            async function mergeBatch(batch) {
+                if (batch.files.length < 2) return;
+                
+                const mergeBatchBtn = batch.container.querySelector('.batch-merge-btn');
+                mergeBatchBtn.disabled = true;
+                
+                try {
+                    showToast(`Starting to merge ${batch.files.length} files in this batch...`, 'info');
+                    
+                    const { PDFDocument } = PDFLib;
+                    const mergedPdf = await PDFDocument.create();
+                    
+                    // Process each file in the batch
+                    for (let i = 0; i < batch.files.length; i++) {
+                        const file = batch.files[i];
+                        
+                        try {
+                            const arrayBuffer = await file.arrayBuffer();
+                            const pdfDoc = await PDFDocument.load(arrayBuffer);
+                            const pageIndices = pdfDoc.getPageIndices();
+                            const copiedPages = await mergedPdf.copyPages(pdfDoc, pageIndices);
+                            
+                            // Add all copied pages to the merged PDF
+                            copiedPages.forEach((page) => {
+                                mergedPdf.addPage(page);
+                            });
+                            
+                            console.log(`Successfully processed ${file.name} with ${pageIndices.length} pages`);
+                            
+                        } catch (fileError) {
+                            console.error(`Error processing file ${file.name}:`, fileError);
+                            showToast(`Error processing ${file.name}. The file might be corrupted or protected.`, 'error');
+                            throw new Error(`Failed to process ${file.name}`);
+                        }
+                    }
+                    
+                    // Save the merged PDF
+                    const mergedPdfBytes = await mergedPdf.save();
+                    
+                    let filename = batch.filenameInput.value.trim();
+                    if (!filename.toLowerCase().endsWith('.pdf')) { 
+                        filename += '.pdf'; 
+                    }
+                    
+                    // Download the merged file
+                    downloadFile(mergedPdfBytes, filename, 'application/pdf');
+                    showToast(`Batch merged successfully: ${filename}`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error merging batch:', error);
+                    
+                    // More specific error messages
+                    if (error.message.includes('corrupted') || error.message.includes('protected')) {
+                        showToast('One or more PDF files are corrupted or password protected. Please check your files.', 'error');
+                    } else if (error.message.includes('Failed to process')) {
+                        // We already showed the specific file error
+                    } else {
+                        showToast('An error occurred during batch merging. Please try again.', 'error');
+                    }
+                } finally {
+                    mergeBatchBtn.disabled = false;
+                }
+            }
+
+            async function mergeAllBatches() {
+                const validBatches = batches.filter(batch => batch.files.length >= 2);
+                if (validBatches.length === 0) return;
+                
+                mergeAllBtn.disabled = true;
+                resetAllBtn.disabled = true;
+                processingFeedback.style.display = 'block';
+                
+                try {
+                    updateProgress(10, 'Initializing batch processing...');
+                    
+                    let processedBatches = 0;
+                    const totalBatches = validBatches.length;
+                    
+                    for (const batch of validBatches) {
+                        updateProgress(10 + (processedBatches / totalBatches) * 80, `Processing batch ${processedBatches + 1} of ${totalBatches}...`);
+                        
+                        try {
+                            const { PDFDocument } = PDFLib;
+                            const mergedPdf = await PDFDocument.create();
+                            
+                            // Process each file in the current batch
+                            for (const file of batch.files) {
+                                try {
+                                    const arrayBuffer = await file.arrayBuffer();
+                                    const pdfDoc = await PDFDocument.load(arrayBuffer);
+                                    const pageIndices = pdfDoc.getPageIndices();
+                                    const copiedPages = await mergedPdf.copyPages(pdfDoc, pageIndices);
+                                    
+                                    // Add all copied pages to the merged PDF
+                                    copiedPages.forEach((page) => {
+                                        mergedPdf.addPage(page);
+                                    });
+                                    
+                                } catch (fileError) {
+                                    console.error(`Error processing file ${file.name} in batch:`, fileError);
+                                    throw new Error(`Failed to process ${file.name} in batch`);
+                                }
+                            }
+                            
+                            const mergedPdfBytes = await mergedPdf.save();
+                            
+                            let filename = batch.filenameInput.value.trim();
+                            if (!filename.toLowerCase().endsWith('.pdf')) { 
+                                filename += '.pdf'; 
+                            }
+                            
+                            // Add a small delay to ensure sequential downloads
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            
+                            downloadFile(mergedPdfBytes, filename, 'application/pdf');
+                            
+                            processedBatches++;
+                            
+                        } catch (batchError) {
+                            console.error(`Error processing batch:`, batchError);
+                            showToast(`Error processing one batch: ${batchError.message}. Skipping batch.`, 'warning');
+                            processedBatches++; // We still count it as processed, but with error
+                        }
+                    }
+                    
+                    updateProgress(95, 'Finalizing batch processing...');
+                    updateProgress(100, 'All batches processed successfully!');
+                    
+                    showToast(`Successfully processed ${processedBatches} batches`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error in batch processing:', error);
+                    showToast('An error occurred during batch processing. Please try again.', 'error');
+                } finally {
+                    setTimeout(() => {
+                        mergeAllBtn.disabled = false;
+                        resetAllBtn.disabled = false;
+                        processingFeedback.style.display = 'none';
+                        progressBar.style.width = '0%';
+                    }, 2000);
+                }
+            }
+
+            function downloadFile(data, fileName, mimeType) {
+                const blob = new Blob([data], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; 
+                a.download = fileName; 
+                document.body.appendChild(a);
+                a.click(); 
+                document.body.removeChild(a); 
+                URL.revokeObjectURL(url);
+            }
+        });
+    </script>
+</body>
+</html>
