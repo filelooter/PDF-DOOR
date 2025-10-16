@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combine PDF - PDF Door</title>
+    
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables from Original Homepage */
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --danger-color: #ea4335;
+            --donation-color: #f44336; /* Added for donation button */
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex-grow: 1;
+            padding-top: 64px; /* Adjust for fixed header */
+        }
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* NEW HOMEPAGE HEADER STYLES */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: background-color 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease;
+        }
+        nav {
+            max-width: 1140px; margin: 0 auto; padding: 0 15px;
+            display: flex; justify-content: space-between; align-items: center; height: 64px;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 12px; text-decoration: none;
+            font-weight: 600; font-size: 20px; color: var(--text-primary); transition: var(--transition);
+        }
+        .logo:hover { color: var(--primary-color); }
+        .logo .logo-icon {
+            width: 36px; height: 36px; background: var(--primary-color); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; color: white;
+            font-size: 18px; transition: var(--transition);
+        }
+        .logo:hover .logo-icon { background: var(--secondary-color); transform: rotate(10deg); }
+        .nav-menu { display: flex; list-style: none; gap: 30px; margin: 0; padding: 0; align-items: center; }
+        .nav-link {
+            color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 16px;
+            position: relative; transition: var(--transition); padding: 8px 0;
+        }
+        .nav-link:hover { color: var(--primary-color); }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px;
+            background: var(--primary-color); transition: all 0.3s ease; transform: translateX(-50%);
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* --- NEW DONATION BUTTON STYLES --- */
+        .donation-btn {
+            background: var(--donation-color); color: white; padding: 8px 20px; border-radius: 6px;
+            font-weight: 500; font-size: 15px; border: none; cursor: pointer; transition: var(--transition);
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        .donation-btn:hover { background: #d32f2f; transform: translateY(-2px); }
+        /* --- END DONATION BUTTON STYLES --- */
+
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 4px; }
+        .hamburger span { width: 25px; height: 3px; background: var(--text-primary); transition: var(--transition); border-radius: 2px; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+        
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed; top: 64px; left: -100%; width: 100%; height: calc(100vh - 64px); background: white;
+                flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 30px;
+                transition: var(--transition); gap: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .nav-menu.active { left: 0; }
+            .hamburger { display: flex; }
+            .donation-btn { display: none; } /* Hide on mobile nav bar, can be added inside menu */
+        }
+        /* END OF NEW HEADER STYLES */
+
+
+        /* Buttons */
+        .btn {
+            display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: 500;
+            text-align: center; cursor: pointer; transition: all 0.2s; border: none;
+            font-size: 15px; text-decoration: none; box-sizing: border-box; /* Fix for button overflow */
+        }
+        .btn-primary { background-color: #4285F4; color: white; }
+        .btn-primary:hover { background-color: #3367D6; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; }
+        
+        /* Main Tool Card & Upload Area */
+        .tool-card-main { background-color: white; border-radius: 8px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e9ecef; }
+        .upload-box { border: 2px dashed #ced4da; border-radius: 8px; padding: 40px; text-align: center; background-color: #fdfdff; transition: all 0.2s; margin-bottom: 24px; }
+        .upload-box.drag-over { border-color: #4285F4; background-color: #e8f0fe; }
+        .upload-icon { font-size: 28px; color: #4285F4; }
+
+        /* File List & Form Inputs */
+        .file-item { display: flex; align-items: center; padding: 12px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; cursor: grab; transition: all 0.2s; }
+        .file-item:not(:last-child) { margin-bottom: 12px; }
+        .file-item.dragging { opacity: 0.5; background: #dbeafe; }
+        .file-item:active { cursor: grabbing; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; color: #495057; font-size: 0.9rem;}
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; transition: all 0.2s; box-sizing: border-box; }
+        .form-control:focus { outline: none; border-color: #4285F4; box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2); }
+
+        /* How to Use Section */
+        .how-to-card { background: white; border-radius: 8px; padding: 24px; text-align: center; border: 1px solid #e9ecef; }
+        .step-circle { width: 40px; height: 40px; background-color: #e8f0fe; color: #4285F4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700; font-size: 1.1rem; }
+
+        /* Related Tools Styles */
+        .custom-tool-card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); text-align: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid #e9ecef; position: relative; overflow: hidden; text-decoration: none; display: block; }
+        .custom-tool-card::before { content: ''; position: absolute; top: 0; left: 50%; right: 50%; height: 3px; background: #4285F4; transition: all 0.3s ease; }
+        .custom-tool-card:hover::before { left: 0; right: 0; }
+        .custom-tool-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .custom-tool-card .tool-icon { font-size: 32px; color: #4285F4; margin-bottom: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-block; }
+        .custom-tool-card:hover .tool-icon { transform: scale(1.2) rotate(5deg); }
+        .custom-tool-card .tool-name { font-size: 1.1rem; font-weight: 600; color: #343a40; margin: 0 0 8px; transition: color 0.3s ease; }
+        .custom-tool-card:hover .tool-name { color: #4285F4; }
+        .custom-tool-card .tool-description { font-size: 0.9rem; color: #6c757d; line-height: 1.5; }
+        
+        /* --- NEW DONATION MODAL STYLES --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.6); z-index: 2000; align-items: center; justify-content: center; animation: fadeIn .3s ease; }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,.3); animation: slideUp .3s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
+        .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); transition: var(--transition); }
+        .close-modal:hover { color: var(--danger-color); transform: scale(1.1); }
+        .modal-body { padding: 24px; }
+        .donation-tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .donation-tab-btn { flex: 1; padding: 12px 10px; cursor: pointer; border: none; background: 0 0; font-size: 14px; font-weight: 500; color: var(--text-secondary); border-bottom: 3px solid transparent; transition: var(--transition); }
+        .donation-tab-btn:hover { color: var(--primary-color); background: var(--light-color); }
+        .donation-tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .donation-content { text-align: center; }
+        .donation-panel { display: none; animation: fadeIn .5s; }
+        .donation-panel.active { display: block; }
+        /* --- END MODAL STYLES --- */
+
+        /* Footer */
+        footer { background-color: #343a40; color: #f8f9fa; padding: 48px 0; margin-top: 64px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px; }
+        .footer-col h4 { margin: 0 0 16px; font-size: 1.1rem; }
+        .footer-col p, .footer-col a { color: #adb5bd; text-decoration: none; font-size: 0.95rem; }
+        .footer-col a:hover { color: white; text-decoration: underline; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col li:not(:last-child) { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <!-- UPDATED: Logo now links to homepage -->
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <span>PDF Door</span>
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <!-- UPDATED: Links now point to homepage sections -->
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="index.html#tools" class="nav-link">All Tools</a></li>
+                <li><a href="index.html#features" class="nav-link">Features</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                <!-- NEW DONATION BUTTON IN HEADER -->
+                <li>
+                    <a href="#" class="donation-btn" id="headerDonationBtn">
+                        <i class="fas fa-heart"></i>
+                        <span>Donate</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container" style="padding-top: 48px; padding-bottom: 48px;">
+        <!-- ... existing main content ... -->
+        <div class="text-center" style="margin-bottom: 40px;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; color: #343a40;">Combine PDF Pages</h1>
+            <p style="font-size: 1.1rem; color: #6c757d; margin-top: 8px;">Merge specific pages from multiple PDFs into one document</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px;">
+            <div class="tool-card-main">
+                <div id="upload-container" class="upload-box">
+                    <input type="file" id="file-input" multiple accept=".pdf" style="display: none;">
+                    <div id="drop-zone">
+                        <div style="margin-bottom: 16px;"><i class="fas fa-copy upload-icon"></i></div>
+                        <p style="font-size: 1rem; color: #495057; font-weight: 500; margin:0;">Drag & Drop PDF files here</p>
+                        <p style="color: #6c757d; margin: 8px 0 16px;">or</p>
+                        <button id="select-files-btn" class="btn btn-primary">Select Files</button>
+                    </div>
+                </div>
+                <div id="file-options-container" style="display: none;">
+                    <div id="file-list" style="margin-bottom: 24px;"></div>
+                    <hr style="border: none; height: 1px; background-color: #e9ecef; margin: 24px 0;">
+                    <div class="form-group">
+                        <label for="output-filename" class="form-label">Output File Name</label>
+                        <input type="text" id="output-filename" class="form-control" value="combined-document.pdf">
+                    </div>
+                    <div style="display: flex; gap: 16px;">
+                         <button id="combine-btn" style="flex-grow: 1; padding: 12px;" class="btn btn-primary" disabled>Combine PDF Pages</button>
+                         <button id="reset-btn" style="flex-grow: 1; padding: 12px;" class="btn btn-secondary">Reset</button>
+                    </div>
+                    <div id="processing-feedback" style="text-align: center; margin-top: 16px; display: none;">
+                        <i class="fas fa-spinner fa-spin" style="color: #4285F4; font-size: 24px;"></i>
+                        <p style="color: #6c757d; margin-top: 8px;">Processing... please wait.</p>
+                    </div>
+                </div>
+            </div>
+
+            <aside>
+                <div style="background-color: #f8f9fa; border-radius: 8px; height: 100%; min-height: 300px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ced4da;">
+                    <div style="text-align: center; color: #6c757d;">
+                        <p>Ad Placeholder</p>
+                        <p style="font-weight: 700; font-size: 1.1rem;">300 x 600</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <section style="margin-top: 80px;">
+            <h2 style="font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 40px; color: #343a40;">How to Combine PDF Pages</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+                <div class="how-to-card">
+                    <div class="step-circle">1</div>
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 8px;">Select Your Files</h3>
+                    <p style="color: #6c757d; font-size: 0.95rem;">Click the "Select Files" button or drag and drop your PDF files into the upload area.</p>
+                </div>
+                <div class="how-to-card">
+                    <div class="step-circle">2</div>
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 8px;">Select Pages</h3>
+                    <p style="color: #6c757d; font-size: 0.95rem;">For each PDF, select which pages you want to include in the combined document.</p>
+                </div>
+                <div class="how-to-card">
+                    <div class="step-circle">3</div>
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 8px;">Combine and Download</h3>
+                    <p style="color: #6c757d; font-size: 0.95rem;">Click the combine button to create your new PDF with selected pages only.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW AD SPACE -->
+        <div style="margin-top: 80px; text-align: center;">
+            <div style="background-color: white; border-radius: 8px; height: 110px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ced4da; max-width: 748px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.06);">
+                <div style="text-align: center; color: #6c757d;">
+                    <p>Ad Placeholder</p>
+                    <p style="font-weight: 700; font-size: 1.1rem;">728 x 90</p>
+                </div>
+            </div>
+        </div>
+
+        <section style="margin-top: 40px;">
+             <h2 style="font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 40px; color: #343a40;">Related PDF Tools</h2>
+             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                 <a href="merge-pdf.html" class="custom-tool-card">
+                     <div class="tool-icon"><i class="fas fa-object-group"></i></div>
+                     <h3 class="tool-name">Merge PDF</h3>
+                     <p class="tool-description">Combine multiple PDF files into one single document.</p>
+                 </a>
+                 <a href="split-pdf.html" class="custom-tool-card">
+                    <div class="tool-icon"><i class="fas fa-cut"></i></div>
+                     <h3 class="tool-name">Split PDF</h3>
+                     <p class="tool-description">Split a PDF file into multiple documents or extract specific pages.</p>
+                 </a>
+                 <a href="extract-pdf-pages.html" class="custom-tool-card">
+                     <div class="tool-icon"><i class="fas fa-file-export"></i></div>
+                     <h3 class="tool-name">Extract PDF Pages</h3>
+                     <p class="tool-description">Extract specific pages from PDF and save as a new document.</p>
+                 </a>
+                  <a href="reorder-pdf-pages.html" class="custom-tool-card">
+                    <div class="tool-icon"><i class="fas fa-sort"></i></div>
+                     <h3 class="tool-name">Reorder PDF Pages</h3>
+                     <p class="tool-description">Rearrange the order of pages in your PDF document.</p>
+                 </a>
+             </div>
+        </section>
+
+    </main>
+
+    <!-- NEW DONATION MODAL HTML -->
+    <div class="modal" id="donationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-heart" style="color: var(--donation-color);"></i> Support Our Work</h3>
+                <button class="close-modal" id="closeDonationModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="donation-tabs">
+                    <button class="donation-tab-btn active" data-tab="upi">UPI</button>
+                    <button class="donation-tab-btn" data-tab="paypal">PayPal</button>
+                    <button class="donation-tab-btn" data-tab="coffee">Buy Me a Coffee</button>
+                </div>
+                <div class="donation-content">
+                    <div id="upi-content" class="donation-panel active">
+                        <p>Scan the QR code with any UPI app to donate.</p>
+                        <img src="https://i.ibb.co/PRrQrZg/photo-2025-10-10-21-21-56.jpg" alt="UPI QR Code" style="max-width: 250px; border-radius: 8px;">
+                        <p style="margin-top: 16px; font-weight: 500; color: var(--text-primary);">UPI ID: filelooter-1@okaxis</p>
+                    </div>
+                    <div id="paypal-content" class="donation-panel">
+                        <p>Click the button below to securely donate via PayPal.</p>
+                        <a href="https://www.paypal.com/paypalme/gaurav9675?locale.x=en_GB&country.x=IN" target="_blank" class="btn" style="background-color: #00457C; color: white; width: 100%;">
+                            <i class="fab fa-paypal"></i> Donate with PayPal
+                        </a>
+                    </div>
+                    <div id="coffee-content" class="donation-panel">
+                        <p>If you find this tool helpful, consider buying me a coffee!</p>
+                        <a href="#" target="_blank" class="btn" style="background-color: #FFDD00; color: #000; width: 100%;">
+                            <i class="fas fa-coffee"></i> Buy Me a Coffee
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>PDF Door</h4>
+                <p>Your complete PDF management solution with professional tools for all your document needs.</p>
+            </div>
+             <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#tools">All Tools</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li><a href="index.html#about">About Us</a></li>
+                </ul>
+            </div>
+             <div class="footer-col">
+                <h4>Popular Tools</h4>
+                 <ul>
+                    <li><a href="merge-pdf.html">Merge PDF</a></li>
+                    <li><a href="combine-pdf-pages.html">Combine PDF Pages</a></li>
+                    <li><a href="split-pdf.html">Split PDF</a></li>
+                    <li><a href="compress-pdf.html">Compress PDF</a></li>
+                </ul>
+            </div>
+             <div class="footer-col">
+                <h4>Support</h4>
+                 <ul>
+                    <li><a href="help-center.html">Help Center</a></li>
+                    <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    <li><a href="terms-of-service.html">Terms of Service</a></li>
+                    <!-- NEW DONATION LINK IN FOOTER -->
+                    <li><a href="#" id="footerDonationBtn">Donate</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Hamburger Menu & Header Scroll Logic
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('navMenu');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // --- NEW DONATION MODAL SCRIPT ---
+        const donationModal = document.getElementById('donationModal');
+        const headerDonationBtn = document.getElementById('headerDonationBtn');
+        const footerDonationBtn = document.getElementById('footerDonationBtn');
+        const closeDonationModalBtn = document.getElementById('closeDonationModal');
+        const donationTabs = document.querySelector('.donation-tabs');
+
+        function openDonationModal(e) {
+            e.preventDefault();
+            donationModal.classList.add('active');
+        }
+        function closeDonationModal() {
+            donationModal.classList.remove('active');
+        }
+
+        headerDonationBtn.addEventListener('click', openDonationModal);
+        footerDonationBtn.addEventListener('click', openDonationModal);
+        closeDonationModalBtn.addEventListener('click', closeDonationModal);
+        donationModal.addEventListener('click', (e) => {
+            if (e.target === donationModal) {
+                closeDonationModal();
+            }
+        });
+        
+        donationTabs.addEventListener('click', e => {
+            if (e.target.classList.contains('donation-tab-btn')) {
+                const currentActive = donationTabs.querySelector('.active');
+                if(currentActive) currentActive.classList.remove('active');
+                e.target.classList.add('active');
+
+                const targetPanelId = e.target.dataset.tab + '-content';
+                const contentArea = document.querySelector('.donation-content');
+                
+                const currentActivePanel = contentArea.querySelector('.active');
+                if(currentActivePanel) currentActivePanel.classList.remove('active');
+                
+                document.getElementById(targetPanelId).classList.add('active');
+            }
+        });
+        // --- END DONATION MODAL SCRIPT ---
+
+
+        // JAVASCRIPT FOR COMBINE PDF PAGES TOOL
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('file-input');
+            const selectFilesBtn = document.getElementById('select-files-btn');
+            const dropZone = document.getElementById('drop-zone');
+            const uploadContainer = document.getElementById('upload-container');
+            const fileOptionsContainer = document.getElementById('file-options-container');
+            const fileList = document.getElementById('file-list');
+            const combineBtn = document.getElementById('combine-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const outputFilenameInput = document.getElementById('output-filename');
+            const processingFeedback = document.getElementById('processing-feedback');
+
+            let filesArray = [];
+            let pageSelections = {};
+
+            selectFilesBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+            
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadContainer.classList.add('drag-over'); });
+            dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadContainer.classList.remove('drag-over'); });
+            dropZone.addEventListener('drop', (e) => { e.preventDefault(); uploadContainer.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+
+            combineBtn.addEventListener('click', combinePdfPages);
+            resetBtn.addEventListener('click', resetTool);
+
+            function handleFiles(newFiles) {
+                const pdfFiles = Array.from(newFiles).filter(file => file.type === 'application/pdf');
+                if (pdfFiles.length === 0) { alert('Please select PDF files only.'); return; }
+                filesArray.push(...pdfFiles);
+                renderFileList();
+            }
+
+            function renderFileList() {
+                fileList.innerHTML = '';
+                fileOptionsContainer.style.display = filesArray.length > 0 ? 'block' : 'none';
+
+                filesArray.forEach((file, index) => {
+                    if (!pageSelections[index]) {
+                        pageSelections[index] = 'all';
+                    }
+                    
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.setAttribute('draggable', true);
+                    fileItem.dataset.index = index;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    
+                    fileItem.innerHTML = `
+                        <i class="fas fa-file-pdf" style="font-size: 20px; color: #dc3545; margin-right: 12px;"></i>
+                        <div style="flex-grow: 1;">
+                            <p style="font-weight: 500; color: #343a40; margin: 0; font-size: 0.95rem;">${file.name}</p>
+                            <p style="font-size: 0.8rem; color: #6c757d; margin: 2px 0 0;">${fileSize} MB</p>
+                            <div style="margin-top: 8px;">
+                                <label style="font-size: 0.8rem; color: #495057; font-weight: 500;">Pages to include:</label>
+                                <input type="text" class="form-control" style="font-size: 0.8rem; padding: 6px 8px;" 
+                                    placeholder="e.g., 1-3, 5, 7-9 (leave blank for all pages)" 
+                                    value="${pageSelections[index] === 'all' ? '' : pageSelections[index]}" 
+                                    data-file-index="${index}">
+                            </div>
+                        </div>
+                        <button class="remove-btn" data-index="${index}" style="background: none; border: none; cursor: pointer; color: #dc3545; padding: 8px;">
+                            <i class="fas fa-times"></i>
+                        </button>`;
+                    fileList.appendChild(fileItem);
+                });
+
+                // Add event listeners for page selection inputs
+                document.querySelectorAll('#file-list input').forEach(input => {
+                    input.addEventListener('change', function() {
+                        const fileIndex = parseInt(this.dataset.fileIndex);
+                        pageSelections[fileIndex] = this.value.trim() === '' ? 'all' : this.value;
+                    });
+                });
+
+                updateCombineButtonState();
+                addDragAndDropListeners();
+                addRemoveButtonListeners();
+            }
+
+            function resetTool() {
+                filesArray = [];
+                pageSelections = {};
+                fileInput.value = '';
+                outputFilenameInput.value = 'combined-document.pdf';
+                renderFileList();
+            }
+
+            function updateCombineButtonState() { 
+                combineBtn.disabled = filesArray.length < 1; 
+            }
+
+            function addDragAndDropListeners() {
+                const items = document.querySelectorAll('.file-item');
+                let dragStartIndex;
+                items.forEach(item => {
+                    item.addEventListener('dragstart', (e) => { 
+                        dragStartIndex = +e.currentTarget.dataset.index; 
+                        setTimeout(() => e.currentTarget.classList.add('dragging'), 0); 
+                    });
+                    item.addEventListener('dragend', (e) => e.currentTarget.classList.remove('dragging'));
+                    item.addEventListener('dragover', (e) => e.preventDefault());
+                    item.addEventListener('drop', (e) => { 
+                        const dragEndIndex = +e.currentTarget.dataset.index; 
+                        swapItems(dragStartIndex, dragEndIndex); 
+                    });
+                });
+            }
+
+            function swapItems(fromIndex, toIndex) {
+                // Swap files
+                const file = filesArray.splice(fromIndex, 1)[0];
+                filesArray.splice(toIndex, 0, file);
+                
+                // Swap page selections
+                const pageSelection = pageSelections[fromIndex];
+                delete pageSelections[fromIndex];
+                
+                // Rebuild pageSelections object with new indices
+                const newPageSelections = {};
+                filesArray.forEach((file, index) => {
+                    if (index === toIndex) {
+                        newPageSelections[index] = pageSelection;
+                    } else if (index < toIndex) {
+                        newPageSelections[index] = pageSelections[index] || 'all';
+                    } else {
+                        newPageSelections[index] = pageSelections[index - 1] || 'all';
+                    }
+                });
+                pageSelections = newPageSelections;
+                
+                renderFileList();
+            }
+            
+            function addRemoveButtonListeners() {
+                document.querySelectorAll('.remove-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = parseInt(e.currentTarget.dataset.index, 10);
+                        filesArray.splice(index, 1);
+                        delete pageSelections[index];
+                        
+                        // Reindex pageSelections
+                        const newPageSelections = {};
+                        filesArray.forEach((file, newIndex) => {
+                            if (newIndex < index) {
+                                newPageSelections[newIndex] = pageSelections[newIndex] || 'all';
+                            } else {
+                                newPageSelections[newIndex] = pageSelections[newIndex + 1] || 'all';
+                            }
+                        });
+                        pageSelections = newPageSelections;
+                        
+                        renderFileList();
+                    });
+                });
+            }
+
+            function parsePageRanges(rangeString, totalPages) {
+                if (rangeString === 'all') {
+                    return Array.from({length: totalPages}, (_, i) => i);
+                }
+                
+                const pages = [];
+                const ranges = rangeString.split(',');
+                
+                for (const range of ranges) {
+                    const trimmed = range.trim();
+                    if (trimmed.includes('-')) {
+                        const [start, end] = trimmed.split('-').map(num => parseInt(num.trim()) - 1);
+                        for (let i = start; i <= end; i++) {
+                            if (i >= 0 && i < totalPages) {
+                                pages.push(i);
+                            }
+                        }
+                    } else {
+                        const pageNum = parseInt(trimmed) - 1;
+                        if (pageNum >= 0 && pageNum < totalPages) {
+                            pages.push(pageNum);
+                        }
+                    }
+                }
+                
+                return [...new Set(pages)]; // Remove duplicates
+            }
+
+            async function combinePdfPages() {
+                if (filesArray.length < 1) return;
+                combineBtn.disabled = true; 
+                resetBtn.disabled = true; 
+                processingFeedback.style.display = 'block';
+                
+                try {
+                    const { PDFDocument } = PDFLib;
+                    const combinedPdf = await PDFDocument.create();
+                    
+                    for (let i = 0; i < filesArray.length; i++) {
+                        const file = filesArray[i];
+                        const arrayBuffer = await file.arrayBuffer();
+                        const pdf = await PDFDocument.load(arrayBuffer);
+                        
+                        const totalPages = pdf.getPageCount();
+                        const pagesToInclude = parsePageRanges(pageSelections[i] || 'all', totalPages);
+                        
+                        if (pagesToInclude.length === 0) {
+                            // If no valid pages selected, include all pages
+                            const allPages = Array.from({length: totalPages}, (_, i) => i);
+                            const copiedPages = await combinedPdf.copyPages(pdf, allPages);
+                            copiedPages.forEach((page) => combinedPdf.addPage(page));
+                        } else {
+                            const copiedPages = await combinedPdf.copyPages(pdf, pagesToInclude);
+                            copiedPages.forEach((page) => combinedPdf.addPage(page));
+                        }
+                    }
+                    
+                    const combinedPdfBytes = await combinedPdf.save();
+                    let filename = outputFilenameInput.value.trim();
+                    if (!filename.toLowerCase().endsWith('.pdf')) { 
+                        filename += '.pdf'; 
+                    }
+                    downloadFile(combinedPdfBytes, filename, 'application/pdf');
+                    
+                    // Reset after successful combination
+                    resetTool();
+                } catch (error) {
+                    console.error('Error combining PDF pages:', error);
+                    alert('An error occurred while combining PDF pages. Please check the console for details.');
+                } finally {
+                    combineBtn.disabled = false; 
+                    resetBtn.disabled = false; 
+                    processingFeedback.style.display = 'none';
+                }
+            }
+
+            function downloadFile(data, fileName, mimeType) {
+                const blob = new Blob([data], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; 
+                a.download = fileName; 
+                document.body.appendChild(a);
+                a.click(); 
+                document.body.removeChild(a); 
+                URL.revokeObjectURL(url);
+            }
+        });
+    </script>
+</body>
+</html>
